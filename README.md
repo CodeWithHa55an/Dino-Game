@@ -1,5 +1,4 @@
 # Dino-Game
-# 🦖 Dino Game
 
 A Google Dino-inspired endless runner game built with **C++** and **Raylib**.
 
