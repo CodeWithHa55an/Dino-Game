@@ -72,3 +72,6 @@ Testing/
 
 # Raylib executable
 game
+
+# Progress recordings
+Process/
