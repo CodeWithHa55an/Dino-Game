@@ -20,6 +20,13 @@ int main()
     // GROUND LOCATION
     int ground = 290;     // where dino should stand
     
+    int cactusX = 800;
+    int cactusY = 300;
+
+    int cactusWidth = 30;
+    int cactusHeight = 50;
+
+    
     // GAME LOOP (runs forever until window closes)
     while (!WindowShouldClose()) {
         
@@ -66,7 +73,14 @@ int main()
         if (dinoX > 800 - dinoWidth) {
             dinoX = 800 - dinoWidth;
         }
+
+        if (cactusX < -cactusWidth)
+{
+    cactusX = 800;
+}
         
+        cactusX = cactusX - 5;
+
         // ===== DRAWING (show everything on screen) =====
         
         BeginDrawing();
@@ -80,6 +94,13 @@ int main()
         // Draw dino as black box
         DrawRectangle(dinoX, dinoY, dinoWidth, dinoHeight, BLACK);
         
+        DrawRectangle(
+    cactusX,
+    cactusY,
+    cactusWidth,
+    cactusHeight,
+    GREEN
+     );
         // Show helpful info
         DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
         DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, DARKGRAY);
