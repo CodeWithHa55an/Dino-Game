@@ -22,13 +22,17 @@ int main()
 
     // ==================== CACTUS VARIABLES ====================
     // Position on screen
-    int cactus1X = 800 + GetRandomValue(0, 300);     // Start at right side of screen
-    int cactus1Y = 300;
-    int cactus2X = 1200;     // How far from TOP
-    int cactusWidth = 30;  // How wide
-    int cactusHeight = 50; // How tall
-    int cactusSpeed = 5;   // How fast it moves left (same as dinoX movement)
+    int cactusX = 800 + GetRandomValue(0, 300); // Start at right side of screen
+    int cactusY = 300;                          // How far from TOP
+    int cactusWidth = 30;                       // How wide
+    int cactusHeight = 50;                      // How tall
+    int cactusSpeed = 5;
 
+    int cactus2X = 1400;    // Start at right side of screen
+    int cactus2Y = 300;     // How far from TOP
+    int cactus2Width = 30;  // How wide
+    int cactus2Height = 50; // How tall
+    int cactus2Speed = 5;
     // ==================== GAME VARIABLES ====================
     bool gameOver = false; // Is game finished?
     int score = 0;         // How many obstacles passed?
@@ -36,10 +40,10 @@ int main()
     int cloud1X = 800;
     int cloud1Y = 80;
 
-     int cloud2X = 1100;
+    int cloud2X = 1100;
     int cloud2Y = 120;
 
-     int cloud3X = 1400;
+    int cloud3X = 1400;
     int cloud3Y = 60;
     // ==================== GAME LOOP ====================
     // This runs 60 times per second (because SetTargetFPS(60))
@@ -106,16 +110,26 @@ int main()
             // ===== CACTUS MOVEMENT =====
 
             // Move cactus LEFT (coming toward dino)
-            cactus1X = cactus1X - cactusSpeed;
+            cactusX = cactusX - cactusSpeed;
+            cactus2X = cactus2X - cactusSpeed;
 
             // If cactus goes off LEFT side, bring it back from RIGHT
-            if (cactus1X < -cactusWidth)
+            if (cactusX < -cactusWidth)
             {
-                cactus1X = 800;     // Reset to right side
+                cactusX = 800;     // Reset to right side
                 score = score + 1; // Player avoided it, increase score
                 if (score % 5 == 0 && cactusSpeed < 15)
                 {
                     cactusSpeed++;
+                }
+            }
+            if (cactus2X < -cactus2Width)
+            {
+                cactus2X = 900;    // Reset to right side
+                score = score + 1; // Player avoided it, increase score
+                if (score % 5 == 0 && cactusSpeed < 15)
+                {
+                    cactus2Speed++;
                 }
             }
 
@@ -123,15 +137,22 @@ int main()
 
             // Check if dino and cactus are overlapping
             // Horizontal overlap: Is cactus horizontally touching dino?
-            bool horizontalOverlap = cactus1X + cactusWidth > dinoX &&
-                                     cactus1X < dinoX + dinoWidth;
+            bool horizontalOverlap = cactusX + cactusWidth > dinoX &&
+                                     cactusX < dinoX + dinoWidth;
 
             // Vertical overlap: Is cactus vertically touching dino?
-            bool verticalOverlap = dinoY + dinoHeight > cactus1Y &&
-                                   dinoY < cactus1Y + cactusHeight;
+            bool verticalOverlap = dinoY + dinoHeight > cactusY &&
+                                   dinoY < cactusY + cactusHeight;
+
+            bool horizontalOverlap2 = cactus2X + cactus2Width > dinoX &&
+                                     cactus2X < dinoX + dinoWidth;
+
+            // Vertical overlap: Is cactus vertically touching dino?
+            bool verticalOverlap2 = dinoY + dinoHeight > cactus2Y &&
+                                   dinoY < cactus2Y + cactus2Height;
 
             // If BOTH horizontal AND vertical overlap = COLLISION
-            if (horizontalOverlap && verticalOverlap)
+            if ((horizontalOverlap && verticalOverlap) || (horizontalOverlap2 && verticalOverlap2))
             {
                 gameOver = true; // End the game
                 dinoSpeed = 0;   // Stop dino movement
@@ -148,13 +169,13 @@ int main()
             dinoX = 100;
             dinoY = ground;
             dinoSpeed = 0;
-            cactus1X = 800;
+            cactusX = 800 + GetRandomValue(0, 300);
+            cactus2X = 800 + GetRandomValue(300, 500);
             score = 0;
         }
         cloud1X--;
         cloud2X--;
         cloud3X--;
-
 
         if (cloud1X < -60)
         {
@@ -200,7 +221,8 @@ int main()
         DrawCircle(dinoX + 35, dinoY + 15, 3, WHITE);
 
         // Draw cactus as a GREEN rectangle
-        DrawRectangle(cactus1X, cactus1Y, cactusWidth, cactusHeight, GREEN);
+        DrawRectangle(cactusX, cactusY, cactusWidth, cactusHeight, GREEN);
+         DrawRectangle(cactus2X, cactus2Y, cactus2Width, cactus2Height, DARKGREEN);
 
         // Draw instructions
         DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
