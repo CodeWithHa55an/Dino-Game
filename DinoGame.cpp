@@ -22,8 +22,9 @@ int main()
 
     // ==================== CACTUS VARIABLES ====================
     // Position on screen
-    int cactusX = 800;     // Start at right side of screen
-    int cactusY = 300;     // How far from TOP
+    int cactus1X = 800 + GetRandomValue(0, 300);     // Start at right side of screen
+    int cactus1Y = 300;
+    int cactus2X = 1200;     // How far from TOP
     int cactusWidth = 30;  // How wide
     int cactusHeight = 50; // How tall
     int cactusSpeed = 5;   // How fast it moves left (same as dinoX movement)
@@ -105,12 +106,12 @@ int main()
             // ===== CACTUS MOVEMENT =====
 
             // Move cactus LEFT (coming toward dino)
-            cactusX = cactusX - cactusSpeed;
+            cactus1X = cactus1X - cactusSpeed;
 
             // If cactus goes off LEFT side, bring it back from RIGHT
-            if (cactusX < -cactusWidth)
+            if (cactus1X < -cactusWidth)
             {
-                cactusX = 800;     // Reset to right side
+                cactus1X = 800;     // Reset to right side
                 score = score + 1; // Player avoided it, increase score
                 if (score % 5 == 0 && cactusSpeed < 15)
                 {
@@ -122,12 +123,12 @@ int main()
 
             // Check if dino and cactus are overlapping
             // Horizontal overlap: Is cactus horizontally touching dino?
-            bool horizontalOverlap = cactusX + cactusWidth > dinoX &&
-                                     cactusX < dinoX + dinoWidth;
+            bool horizontalOverlap = cactus1X + cactusWidth > dinoX &&
+                                     cactus1X < dinoX + dinoWidth;
 
             // Vertical overlap: Is cactus vertically touching dino?
-            bool verticalOverlap = dinoY + dinoHeight > cactusY &&
-                                   dinoY < cactusY + cactusHeight;
+            bool verticalOverlap = dinoY + dinoHeight > cactus1Y &&
+                                   dinoY < cactus1Y + cactusHeight;
 
             // If BOTH horizontal AND vertical overlap = COLLISION
             if (horizontalOverlap && verticalOverlap)
@@ -147,7 +148,7 @@ int main()
             dinoX = 100;
             dinoY = ground;
             dinoSpeed = 0;
-            cactusX = 800;
+            cactus1X = 800;
             score = 0;
         }
         cloud1X--;
@@ -194,17 +195,19 @@ int main()
         DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
         DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
         // Draw dino as a BLACK rectangle
-        DrawRectangle(dinoX, dinoY, dinoWidth, dinoHeight, BLACK);
+        DrawRectangle(dinoX, dinoY, 40, 60, BLACK);
+        DrawRectangle(dinoX + 30, dinoY + 10, 20, 20, BLACK);
+        DrawCircle(dinoX + 35, dinoY + 15, 3, WHITE);
 
         // Draw cactus as a GREEN rectangle
-        DrawRectangle(cactusX, cactusY, cactusWidth, cactusHeight, GREEN);
+        DrawRectangle(cactus1X, cactus1Y, cactusWidth, cactusHeight, GREEN);
 
         // Draw instructions
         DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
         DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, DARKGRAY);
 
         // Draw current score
-        DrawText(TextFormat("Score: %d", score), 10, 70, 20, DARKGRAY);
+        DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
 
         // If game is over, show game over screen
         if (gameOver)
