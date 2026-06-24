@@ -32,6 +32,14 @@ int main()
     bool gameOver = false; // Is game finished?
     int score = 0;         // How many obstacles passed?
 
+    int cloud1X = 800;
+    int cloud1Y = 80;
+
+     int cloud2X = 1100;
+    int cloud2Y = 120;
+
+     int cloud3X = 1400;
+    int cloud3Y = 60;
     // ==================== GAME LOOP ====================
     // This runs 60 times per second (because SetTargetFPS(60))
     while (!WindowShouldClose())
@@ -142,6 +150,28 @@ int main()
             cactusX = 800;
             score = 0;
         }
+        cloud1X--;
+        cloud2X--;
+        cloud3X--;
+
+
+        if (cloud1X < -60)
+        {
+            cloud1X = 800;
+            cloud1Y = GetRandomValue(40, 150);
+        }
+
+        if (cloud2X < -60)
+        {
+            cloud2X = 800;
+            cloud2Y = GetRandomValue(40, 150);
+        }
+
+        if (cloud3X < -60)
+        {
+            cloud3X = 800;
+            cloud3Y = GetRandomValue(40, 150);
+        }
 
         // ===== DRAWING (Show everything on screen) =====
 
@@ -152,7 +182,17 @@ int main()
 
         // Draw ground line
         DrawLine(0, 350, 800, 350, BLACK);
+        DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
+        DrawCircle(cloud1X + 20, cloud1Y, 20, LIGHTGRAY);
+        DrawCircle(cloud1X + 40, cloud1Y, 20, LIGHTGRAY);
 
+        DrawCircle(cloud2X, cloud2Y, 20, LIGHTGRAY);
+        DrawCircle(cloud2X + 20, cloud2Y, 20, LIGHTGRAY);
+        DrawCircle(cloud2X + 40, cloud2Y, 20, LIGHTGRAY);
+
+        DrawCircle(cloud3X, cloud3Y, 20, LIGHTGRAY);
+        DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
+        DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
         // Draw dino as a BLACK rectangle
         DrawRectangle(dinoX, dinoY, dinoWidth, dinoHeight, BLACK);
 
