@@ -34,6 +34,7 @@ int main()
     int cactus2Height = 50; // How tall
 
     // ==================== GAME VARIABLES ====================
+    bool gameStarted = false;
     bool gameOver = false; // Is game finished?
     int score = 0;         // How many obstacles passed?
     bool secondCactusActive = false;
@@ -53,8 +54,15 @@ int main()
     // This runs 60 times per second (because SetTargetFPS(60))
     while (!WindowShouldClose())
     {
+        if (!gameStarted)
+        {
+            if (IsKeyPressed(KEY_ENTER))
+            {
+                gameStarted = true;
+            }
+        }
         // Only update game if NOT game over
-        if (!gameOver)
+        if (!gameOver && gameStarted)
         {
             // ===== PLAYER INPUT (What player does) =====
 
@@ -188,6 +196,7 @@ int main()
             cloud1Y = GetRandomValue(40, 150);
             cloud2Y = GetRandomValue(40, 150);
             cloud3Y = GetRandomValue(40, 150);
+            gameStarted = true;
         }
         cloud1X--;
         cloud2X--;
@@ -210,14 +219,16 @@ int main()
             cloud3X = 800;
             cloud3Y = GetRandomValue(40, 150);
         }
-        if(dinoY == ground){
-        animationframe++;
-        
-        if (animationframe > 10)
+        if (dinoY == ground)
         {
-            legforward = !legforward;
-            animationframe = 0;
-        }}
+            animationframe++;
+
+            if (animationframe > 10)
+            {
+                legforward = !legforward;
+                animationframe = 0;
+            }
+        }
 
         // ===== DRAWING (Show everything on screen) =====
 
@@ -264,7 +275,11 @@ int main()
 
         // Draw current score
         DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
-
+        if (!gameStarted)
+        {
+            DrawText("DINO GAME", 250, 120, 50, BLACK);
+            DrawText("Press ENTER to Start", 220, 200, 30, DARKGRAY);
+        }
         // If game is over, show game over screen
         if (gameOver)
         {
