@@ -32,7 +32,7 @@ int main()
     int cactus2Y = 300;     // How far from TOP
     int cactus2Width = 30;  // How wide
     int cactus2Height = 50; // How tall
-    
+
     // ==================== GAME VARIABLES ====================
     bool gameOver = false; // Is game finished?
     int score = 0;         // How many obstacles passed?
@@ -46,6 +46,9 @@ int main()
 
     int cloud3X = 1400;
     int cloud3Y = 60;
+
+    int animationframe = 0;
+    bool legforward = true;
     // ==================== GAME LOOP ====================
     // This runs 60 times per second (because SetTargetFPS(60))
     while (!WindowShouldClose())
@@ -117,8 +120,8 @@ int main()
             // If cactus goes off LEFT side, bring it back from RIGHT
             if (cactusX < -cactusWidth)
             {
-                cactusX = 800 + GetRandomValue(0, 300);     // Reset to right side
-                score = score + 1; // Player avoided it, increase score
+                cactusX = 800 + GetRandomValue(0, 300); // Reset to right side
+                score = score + 1;                      // Player avoided it, increase score
                 if (score % 5 == 0 && cactusSpeed < 15)
                 {
                     cactusSpeed++;
@@ -207,6 +210,14 @@ int main()
             cloud3X = 800;
             cloud3Y = GetRandomValue(40, 150);
         }
+        if(dinoY == ground){
+        animationframe++;
+        
+        if (animationframe > 10)
+        {
+            legforward = !legforward;
+            animationframe = 0;
+        }}
 
         // ===== DRAWING (Show everything on screen) =====
 
@@ -232,6 +243,16 @@ int main()
         DrawRectangle(dinoX, dinoY, 40, 60, BLACK);
         DrawRectangle(dinoX + 30, dinoY + 10, 20, 20, BLACK);
         DrawCircle(dinoX + 35, dinoY + 15, 3, WHITE);
+        if (legforward)
+        {
+            DrawRectangle(dinoX + 5, dinoY + 60, 8, 15, BLACK);
+            DrawRectangle(dinoX + 25, dinoY + 60, 8, 8, BLACK);
+        }
+        else
+        {
+            DrawRectangle(dinoX + 5, dinoY + 60, 8, 8, BLACK);
+            DrawRectangle(dinoX + 25, dinoY + 60, 8, 15, BLACK);
+        }
 
         // Draw cactus as a GREEN rectangle
         DrawRectangle(cactusX, cactusY, cactusWidth, cactusHeight, GREEN);
