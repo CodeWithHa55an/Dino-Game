@@ -278,7 +278,9 @@ int main()
         if (!gameStarted)
         {
             DrawText("DINO GAME", 250, 120, 50, BLACK);
+            if ((GetTime() * 2) - (int)(GetTime() * 2) < 0.5){
             DrawText("Press ENTER to Start", 220, 200, 30, DARKGRAY);
+            }
         }
         // If game is over, show game over screen
         if (gameOver)
