@@ -36,7 +36,8 @@ int main()
     // ==================== GAME VARIABLES ====================
     bool gameStarted = false;
     bool gameOver = false; // Is game finished?
-    int score = 0;         // How many obstacles passed?
+    int score = 0;
+    int highscore = 0; // How many obstacles passed?
     bool secondCactusActive = false;
 
     int cloud1X = 800;
@@ -130,6 +131,10 @@ int main()
             {
                 cactusX = 800 + GetRandomValue(0, 300); // Reset to right side
                 score = score + 1;                      // Player avoided it, increase score
+                if (score > highscore)
+                {
+                    highscore = score;
+                }
                 if (score % 5 == 0 && cactusSpeed < 15)
                 {
                     cactusSpeed++;
@@ -147,6 +152,10 @@ int main()
                 int gap = 700 + (score / 5) * 70 + (cactusSpeed - 5) * 20;
                 cactus2X = 900 + gap + GetRandomValue(100, 220);
                 score = score + 1; // Player avoided it, increase score
+                if (score > highscore)
+                {
+                    highscore = score;
+                }
             }
 
             // ===== COLLISION DETECTION (Did dino hit cactus?) =====
@@ -197,6 +206,7 @@ int main()
             cloud2Y = GetRandomValue(40, 150);
             cloud3Y = GetRandomValue(40, 150);
             gameStarted = true;
+            highscore = highscore;
         }
         cloud1X--;
         cloud2X--;
@@ -275,18 +285,27 @@ int main()
 
         // Draw current score
         DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
+        DrawText(TextFormat("High Score: %d", highscore),
+                 600, 50, 20, DARKGRAY);
         if (!gameStarted)
         {
             DrawText("DINO GAME", 250, 120, 50, BLACK);
-            if ((GetTime() * 2) - (int)(GetTime() * 2) < 0.5){
-            DrawText("Press ENTER to Start", 220, 200, 30, DARKGRAY);
+            if ((GetTime() * 2) - (int)(GetTime() * 2) < 0.5)
+            {
+                DrawText("Press ENTER to Start", 220, 200, 30, DARKGRAY);
             }
         }
         // If game is over, show game over screen
         if (gameOver)
         {
             DrawText("GAME OVER", 280, 150, 40, RED);
-            DrawText("Press R to restart", 255, 195, 25, DARKGRAY);
+            DrawText("Press R to restart", 285, 195, 25, DARKGRAY);
+            DrawText(
+                TextFormat("High Score: %d", highscore),
+                320,
+                240,
+                25,
+                BLUE);
         }
 
         EndDrawing(); // Finish drawing frame
