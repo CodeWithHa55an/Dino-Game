@@ -55,10 +55,10 @@ int main()
     int score = 0;
     int highscore = 0;
     bool secondCactusActive = false;
-    
+
     // BIRD SPAWN TRACKING - FIXED!
-    int nextBirdSpawnScore = 10;  // First bird at score 10
-    bool birdSpawnedAtThisScore = false;  // Prevents duplicate spawns
+    int nextBirdSpawnScore = 10;         // First bird at score 10
+    bool birdSpawnedAtThisScore = false; // Prevents duplicate spawns
 
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
@@ -118,7 +118,7 @@ int main()
             // ===== CACTUS & BIRD MOVEMENT - ALWAYS ACTIVE =====
             cactusX = cactusX - cactusSpeed;
             cactus2X = cactus2X - cactusSpeed;
-            
+
             if (birdActive)
             {
                 birdX = birdX - birdspeed;
@@ -128,13 +128,16 @@ int main()
             if (cactusX < -cactusWidth)
             {
                 cactusX = 800 + GetRandomValue(0, 300);
+                cactusHeight = GetRandomValue(40, 80);
+                cactusY = 350 - cactusHeight;
+                cactusWidth = GetRandomValue(20, 50);
                 score = score + 1;
-                
+
                 if (score > highscore)
                 {
                     highscore = score;
                 }
-                
+
                 if (score % 5 == 0 && cactusSpeed < 15)
                 {
                     cactusSpeed++;
@@ -154,8 +157,11 @@ int main()
             {
                 int gap = 700 + (score / 5) * 70 + (cactusSpeed - 5) * 20;
                 cactus2X = 900 + gap + GetRandomValue(100, 220);
+                cactus2Height = GetRandomValue(40, 90);
+                cactus2Y = 350 - cactus2Height;
+                cactus2Width = GetRandomValue(20, 50);
                 score = score + 1;
-                
+
                 if (score > highscore)
                 {
                     highscore = score;
@@ -166,8 +172,8 @@ int main()
             if (birdActive && birdX < -birdWidth)
             {
                 birdActive = false;
-                score = score + 1;  // Player passed the bird
-                
+                score = score + 1; // Player passed the bird
+
                 if (score > highscore)
                 {
                     highscore = score;
@@ -179,11 +185,11 @@ int main()
             if (score >= nextBirdSpawnScore && !birdSpawnedAtThisScore && !birdActive)
             {
                 // Check if cactus is far enough (spawn only when safe)
-                if (cactusX > 600)  // Cactus is far away
+                if (cactusX > 600) // Cactus is far away
                 {
                     birdActive = true;
-                    birdX = 800;  // Always spawn at same position
-                    birdY = 220;  // Always spawn at same height (consistent)
+                    birdX = 800; // Always spawn at same position
+                    birdY = 220; // Always spawn at same height (consistent)
                     birdSpawnedAtThisScore = true;
                 }
             }
@@ -191,8 +197,8 @@ int main()
             // Move to next bird spawn score after this one is reached
             if (score > nextBirdSpawnScore && birdSpawnedAtThisScore && !birdActive)
             {
-                nextBirdSpawnScore += 10;  // Next bird at +10
-                birdSpawnedAtThisScore = false;  // Reset flag for next bird
+                nextBirdSpawnScore += 10;       // Next bird at +10
+                birdSpawnedAtThisScore = false; // Reset flag for next bird
             }
 
             // ===== COLLISION DETECTION - CACTUS 1 =====
@@ -214,8 +220,8 @@ int main()
                                 dinoY < birdY + birdheight;
 
             // ===== GAME OVER IF HIT ANYTHING =====
-            if ((horizontalOverlap && verticalOverlap) || 
-                (horizontalOverlap2 && verticalOverlap2) || 
+            if ((horizontalOverlap && verticalOverlap) ||
+                (horizontalOverlap2 && verticalOverlap2) ||
                 (birdActive && birdHorizontal && birdVertical))
             {
                 gameOver = true;
@@ -238,8 +244,8 @@ int main()
             birdActive = false;
             birdX = 800;
             birdY = 220;
-            nextBirdSpawnScore = 10;  // Reset bird spawn score
-            birdSpawnedAtThisScore = false;  // Reset flag
+            nextBirdSpawnScore = 10;        // Reset bird spawn score
+            birdSpawnedAtThisScore = false; // Reset flag
             cloud1X = 800;
             cloud2X = 1100;
             cloud3X = 1400;
@@ -305,7 +311,7 @@ int main()
         DrawRectangle(dinoX, dinoY, 40, 60, BLACK);
         DrawRectangle(dinoX + 30, dinoY + 10, 20, 20, BLACK);
         DrawCircle(dinoX + 35, dinoY + 15, 3, WHITE);
-        
+
         if (legforward)
         {
             DrawRectangle(dinoX + 5, dinoY + 60, 8, 15, BLACK);
