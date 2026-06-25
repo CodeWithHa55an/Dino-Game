@@ -51,6 +51,18 @@ int main()
 
     int animationframe = 0;
     bool legforward = true;
+
+    int birdX = 1200;
+    int birdY = 220;
+
+    int birdWidth = 40;
+    int birdheight = 20;
+
+    int birdspeed = 7;
+    bool birdActive = false;
+    bool cactusActive = true;
+    int nextBirdScore = 10;
+
     // ==================== GAME LOOP ====================
     // This runs 60 times per second (because SetTargetFPS(60))
     while (!WindowShouldClose())
@@ -122,12 +134,18 @@ int main()
 
             // ===== CACTUS MOVEMENT =====
 
-            // Move cactus LEFT (coming toward dino)
-            cactusX = cactusX - cactusSpeed;
-            cactus2X = cactus2X - cactusSpeed;
+            if (cactusActive)
+            {
+                cactusX = cactusX - cactusSpeed;
+                cactus2X = cactus2X - cactusSpeed;
+            }
 
-            // If cactus goes off LEFT side, bring it back from RIGHT
-            if (cactusX < -cactusWidth)
+            if (birdActive)
+            {
+                birdX = birdX - birdspeed;
+            }
+
+            if (cactusActive && cactusX < -cactusWidth)
             {
                 cactusX = 800 + GetRandomValue(0, 300); // Reset to right side
                 score = score + 1;                      // Player avoided it, increase score
@@ -147,6 +165,21 @@ int main()
                     secondCactusActive = true;
                 }
             }
+
+            if (birdActive && birdX < -birdWidth)
+            {
+                birdX = 800 + GetRandomValue(500, 900);
+                birdY = GetRandomValue(180, 260);
+                birdActive = false;
+                cactusActive = true;
+                score++;
+
+                if (score > highscore)
+                {
+                    highscore = score;
+                }
+            }
+
             if (secondCactusActive && cactus2X < -cactus2Width)
             {
                 int gap = 700 + (score / 5) * 70 + (cactusSpeed - 5) * 20;
@@ -156,6 +189,15 @@ int main()
                 {
                     highscore = score;
                 }
+            }
+
+            if (score >= nextBirdScore && !birdActive && cactusActive)
+            {
+                birdActive = true;
+                cactusActive = false;
+                birdX = 800 + GetRandomValue(300, 600);
+                birdY = GetRandomValue(180, 260);
+                nextBirdScore += 10;
             }
 
             // ===== COLLISION DETECTION (Did dino hit cactus?) =====
@@ -176,8 +218,16 @@ int main()
             bool verticalOverlap2 = dinoY + dinoHeight > cactus2Y &&
                                     dinoY < cactus2Y + cactus2Height;
 
+            bool birdHorizontal =
+                birdX + birdWidth > dinoX &&
+                birdX < dinoX + dinoWidth;
+
+            bool birdVertical =
+                dinoY + dinoHeight > birdY &&
+                dinoY < birdY + birdheight;
+
             // If BOTH horizontal AND vertical overlap = COLLISION
-            if ((horizontalOverlap && verticalOverlap) || (horizontalOverlap2 && verticalOverlap2))
+            if ((horizontalOverlap && verticalOverlap) || (horizontalOverlap2 && verticalOverlap2)|| (birdHorizontal && birdVertical))
             {
                 gameOver = true; // End the game
                 dinoSpeed = 0;   // Stop dino movement
@@ -199,6 +249,9 @@ int main()
             score = 0;
             cactusSpeed = 5;
             secondCactusActive = false;
+            birdActive = false;
+            cactusActive = true;
+            nextBirdScore = 10;
             cloud1X = 800;
             cloud2X = 1100;
             cloud3X = 1400;
@@ -206,7 +259,7 @@ int main()
             cloud2Y = GetRandomValue(40, 150);
             cloud3Y = GetRandomValue(40, 150);
             gameStarted = true;
-            highscore = highscore;
+            birdY = GetRandomValue(180, 260);
         }
         cloud1X--;
         cloud2X--;
@@ -282,6 +335,15 @@ int main()
         // Draw instructions
         DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
         DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, DARKGRAY);
+        
+        if(score>=10){
+        DrawCircle(birdX, birdY, 10, BLACK);
+        DrawTriangle(
+            {(float)birdX - 10, (float)birdY},
+            {(float)birdX - 25, (float)birdY - 10},
+            {(float)birdX - 25, (float)birdY + 10},
+            BLACK);
+        }
 
         // Draw current score
         DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
