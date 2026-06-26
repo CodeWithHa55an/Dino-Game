@@ -8,8 +8,8 @@ int main()
 
     // Load textures from the correct Assets folder
     Texture2D birdUpTexture = LoadTexture("Assets/Bird.png");
-    Texture2D birdLevelTexture = LoadTexture("Assets/Bird_Level.png");
-    Texture2D birdDownTexture = LoadTexture("Assets/Bird_Down.png");
+    Texture2D birdLevel2Texture = LoadTexture("Assets/Bird_Level2.png");
+    Texture2D birdDown2Texture = LoadTexture("Assets/Bird_Down2.png");
     Texture2D dinoIdleTexture = LoadTexture("Assets/Dino_Idle.png");
     Texture2D dinoRun1Texture = LoadTexture("Assets/Dino_Run.png");
     Texture2D dinoRun2Texture = LoadTexture("Assets/Dino_Run2.png");
@@ -54,7 +54,7 @@ int main()
     int birdX = 800;
     int birdY = 220;
     int birdWidth = 40;
-    int birdHeight = 25;
+    int birdHeight = 20;
     int birdSpeed = 7;
     bool birdActive = false;
     int birdAnimationCounter = 0;
@@ -388,15 +388,39 @@ int main()
         // TODO: Will replace with texture once images are ready
         DrawRectangle(cactus2X, cactus2Y, cactus2Width, cactus2Height, DARKGREEN);
 
-        // ===== DRAW BIRD (Using textures) =====
+        // ===== DRAW BIRD (Using textures with scaling) =====
         if (birdActive)
         {
             if (birdAnimationType == 0)
-                DrawTexture(birdUpTexture, birdX, birdY, WHITE);
+            {
+                DrawTexturePro(
+                    birdUpTexture,
+                    (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
+                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+            }
             else if (birdAnimationType == 1)
-                DrawTexture(birdLevelTexture, birdX, birdY, WHITE);
+            {
+                DrawTexturePro(
+                    birdLevel2Texture,
+                    (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
+                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+            }
             else
-                DrawTexture(birdDownTexture, birdX, birdY, WHITE);
+            {
+                DrawTexturePro(
+                    birdDown2Texture,
+                    (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
+                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+            }
         }
 
         // Draw UI
@@ -428,8 +452,8 @@ int main()
 
     // Unload bird and dino textures
     UnloadTexture(birdUpTexture);
-    UnloadTexture(birdLevelTexture);
-    UnloadTexture(birdDownTexture);
+    UnloadTexture(birdLevel2Texture);
+    UnloadTexture(birdDown2Texture);
     UnloadTexture(dinoIdleTexture);
     UnloadTexture(dinoRun1Texture);
     UnloadTexture(dinoRun2Texture);
