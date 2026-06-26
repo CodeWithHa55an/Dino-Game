@@ -6,6 +6,14 @@ int main()
     InitWindow(800, 420, "Dino Game");
     SetTargetFPS(60);
 
+    // Load textures from the correct Assets folder
+    Texture2D birdUpTexture = LoadTexture("Assets/Bird.png");
+    Texture2D birdLevelTexture = LoadTexture("Assets/Bird_Level.png");
+    Texture2D birdDownTexture = LoadTexture("Assets/Bird_Down.png");
+    Texture2D dinoIdleTexture = LoadTexture("Assets/Dino_Idle.png");
+    Texture2D dinoRun1Texture = LoadTexture("Assets/Dino_Run.png");
+    Texture2D dinoRun2Texture = LoadTexture("Assets/Dino_Run2.png");
+
     // ==================== DINO VARIABLES ====================
     int dinoX = 100;
     int dinoY = 290;
@@ -16,18 +24,23 @@ int main()
     int gravity = 1;
     int jumpPower = 18;
     int ground = 290;
+    bool isJumping = false;
+    bool isMoving = false;
+    int dinoRunCounter = 0;
+    int dinoRunFrame = 0;
 
     // ==================== CACTUS VARIABLES ====================
     int cactusX = 800 + GetRandomValue(0, 300);
-    int cactusY = 300;
+    int cactusY = 295;
     int cactusWidth = 30;
     int cactusHeight = 50;
     int cactusSpeed = 5;
 
     int cactus2X = 1400;
-    int cactus2Y = 300;
+    int cactus2Y = 295;
     int cactus2Width = 30;
     int cactus2Height = 50;
+    bool secondCactusActive = false;
 
     // ==================== CLOUD VARIABLES ====================
     int cloud1X = 800;
@@ -37,28 +50,24 @@ int main()
     int cloud3X = 1400;
     int cloud3Y = 60;
 
-    // ==================== DINO ANIMATION ====================
-    int animationframe = 0;
-    bool legforward = true;
-
     // ==================== BIRD VARIABLES ====================
     int birdX = 800;
     int birdY = 220;
     int birdWidth = 40;
-    int birdheight = 20;
-    int birdspeed = 7;
+    int birdHeight = 25;
+    int birdSpeed = 7;
     bool birdActive = false;
+    int birdAnimationCounter = 0;
+    int birdAnimationType = 0; // 0=up, 1=level, 2=down
 
     // ==================== GAME VARIABLES ====================
     bool gameStarted = false;
     bool gameOver = false;
     int score = 0;
     int highscore = 0;
-    bool secondCactusActive = false;
 
-    // BIRD SPAWN TRACKING - FIXED!
-    int nextBirdSpawnScore = 10;         // First bird at score 10
-    bool birdSpawnedAtThisScore = false; // Prevents duplicate spawns
+    int nextBirdSpawnScore = 10;
+    bool birdSpawnedAtThisScore = false;
 
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
@@ -69,6 +78,9 @@ int main()
             if (IsKeyPressed(KEY_ENTER))
             {
                 gameStarted = true;
+                dinoY = ground;
+                dinoSpeed = 0;
+                isJumping = false;
             }
         }
 
@@ -81,17 +93,21 @@ int main()
                 if (dinoY == ground)
                 {
                     dinoSpeed = -jumpPower;
+                    isJumping = true;
                 }
             }
 
+            isMoving = false;
             if (IsKeyDown(KEY_RIGHT))
             {
                 dinoX = dinoX + 5;
+                isMoving = true;
             }
 
             if (IsKeyDown(KEY_LEFT))
             {
                 dinoX = dinoX - 5;
+                isMoving = true;
             }
 
             // ===== PHYSICS =====
@@ -103,6 +119,7 @@ int main()
             {
                 dinoY = ground;
                 dinoSpeed = 0;
+                isJumping = false;
             }
 
             // ===== DINO BOUNDARIES =====
@@ -115,22 +132,45 @@ int main()
                 dinoX = 800 - dinoWidth;
             }
 
-            // ===== CACTUS & BIRD MOVEMENT - ALWAYS ACTIVE =====
+            // ===== DINO RUN ANIMATION =====
+            if (!isJumping && isMoving)
+            {
+                dinoRunCounter++;
+                if (dinoRunCounter > 10)
+                {
+                    dinoRunFrame = (dinoRunFrame + 1) % 2;
+                    dinoRunCounter = 0;
+                }
+            }
+            else
+            {
+                dinoRunFrame = 0;
+                dinoRunCounter = 0;
+            }
+
+            // ===== CACTUS MOVEMENT =====
             cactusX = cactusX - cactusSpeed;
             cactus2X = cactus2X - cactusSpeed;
 
+            // ===== BIRD MOVEMENT & ANIMATION =====
             if (birdActive)
             {
-                birdX = birdX - birdspeed;
+                birdX = birdX - birdSpeed;
+                birdAnimationCounter++;
+                if (birdAnimationCounter > 15)
+                {
+                    birdAnimationType = (birdAnimationType + 1) % 3;
+                    birdAnimationCounter = 0;
+                }
             }
 
             // ===== CACTUS 1 RESET =====
             if (cactusX < -cactusWidth)
             {
                 cactusX = 800 + GetRandomValue(0, 300);
-                cactusHeight = GetRandomValue(40, 80);
-                cactusY = 350 - cactusHeight;
-                cactusWidth = GetRandomValue(20, 50);
+                cactusY = 295;
+                cactusWidth = 30;
+                cactusHeight = 50;
                 score = score + 1;
 
                 if (score > highscore)
@@ -143,11 +183,9 @@ int main()
                     cactusSpeed++;
                 }
 
-                // Spawn second cactus at score 8
                 if (score >= 8 && !secondCactusActive)
                 {
-                    int gap = 700 + (score / 5) * 70 + (cactusSpeed - 5) * 20;
-                    cactus2X = cactusX + gap + GetRandomValue(80, 180);
+                    cactus2X = cactusX + GetRandomValue(200, 400);
                     secondCactusActive = true;
                 }
             }
@@ -155,11 +193,10 @@ int main()
             // ===== CACTUS 2 RESET =====
             if (secondCactusActive && cactus2X < -cactus2Width)
             {
-                int gap = 700 + (score / 5) * 70 + (cactusSpeed - 5) * 20;
-                cactus2X = 900 + gap + GetRandomValue(100, 220);
-                cactus2Height = GetRandomValue(40, 90);
-                cactus2Y = 350 - cactus2Height;
-                cactus2Width = GetRandomValue(20, 50);
+                cactus2X = 900 + GetRandomValue(100, 220);
+                cactus2Y = 295;
+                cactus2Width = 30;
+                cactus2Height = 50;
                 score = score + 1;
 
                 if (score > highscore)
@@ -168,11 +205,11 @@ int main()
                 }
             }
 
-            // ===== BIRD RESET (When it passes off screen) =====
+            // ===== BIRD RESET =====
             if (birdActive && birdX < -birdWidth)
             {
                 birdActive = false;
-                score = score + 1; // Player passed the bird
+                score = score + 1;
 
                 if (score > highscore)
                 {
@@ -180,25 +217,24 @@ int main()
                 }
             }
 
-            // ===== SPAWN BIRD AT EXACT SCORES (10, 20, 30, 40, 50...) =====
-            // FIXED: Simple loop-based spawning
+            // ===== SPAWN BIRD AT EXACT SCORES =====
             if (score >= nextBirdSpawnScore && !birdSpawnedAtThisScore && !birdActive)
             {
-                // Check if cactus is far enough (spawn only when safe)
-                if (cactusX > 600) // Cactus is far away
+                if (cactusX > 600)
                 {
                     birdActive = true;
-                    birdX = 800; // Always spawn at same position
-                    birdY = 220; // Always spawn at same height (consistent)
+                    birdX = 800;
+                    birdY = 220;
+                    birdAnimationType = 0;
+                    birdAnimationCounter = 0;
                     birdSpawnedAtThisScore = true;
                 }
             }
 
-            // Move to next bird spawn score after this one is reached
             if (score > nextBirdSpawnScore && birdSpawnedAtThisScore && !birdActive)
             {
-                nextBirdSpawnScore += 10;       // Next bird at +10
-                birdSpawnedAtThisScore = false; // Reset flag for next bird
+                nextBirdSpawnScore += 10;
+                birdSpawnedAtThisScore = false;
             }
 
             // ===== COLLISION DETECTION - CACTUS 1 =====
@@ -217,9 +253,9 @@ int main()
             bool birdHorizontal = birdX + birdWidth > dinoX &&
                                   birdX < dinoX + dinoWidth;
             bool birdVertical = dinoY + dinoHeight > birdY &&
-                                dinoY < birdY + birdheight;
+                                dinoY < birdY + birdHeight;
 
-            // ===== GAME OVER IF HIT ANYTHING =====
+            // ===== GAME OVER =====
             if ((horizontalOverlap && verticalOverlap) ||
                 (horizontalOverlap2 && verticalOverlap2) ||
                 (birdActive && birdHorizontal && birdVertical))
@@ -236,6 +272,7 @@ int main()
             dinoX = 100;
             dinoY = ground;
             dinoSpeed = 0;
+            isJumping = false;
             cactusX = 800 + GetRandomValue(0, 300);
             cactus2X = 1400;
             score = 0;
@@ -244,8 +281,10 @@ int main()
             birdActive = false;
             birdX = 800;
             birdY = 220;
-            nextBirdSpawnScore = 10;        // Reset bird spawn score
-            birdSpawnedAtThisScore = false; // Reset flag
+            birdAnimationType = 0;
+            birdAnimationCounter = 0;
+            nextBirdSpawnScore = 10;
+            birdSpawnedAtThisScore = false;
             cloud1X = 800;
             cloud2X = 1100;
             cloud3X = 1400;
@@ -276,17 +315,6 @@ int main()
             cloud3Y = GetRandomValue(40, 150);
         }
 
-        // ===== DINO LEG ANIMATION =====
-        if (dinoY == ground)
-        {
-            animationframe++;
-            if (animationframe > 10)
-            {
-                legforward = !legforward;
-                animationframe = 0;
-            }
-        }
-
         // ===== DRAWING =====
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -307,35 +335,68 @@ int main()
         DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
         DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
 
-        // Draw dino
-        DrawRectangle(dinoX, dinoY, 40, 60, BLACK);
-        DrawRectangle(dinoX + 30, dinoY + 10, 20, 20, BLACK);
-        DrawCircle(dinoX + 35, dinoY + 15, 3, WHITE);
-
-        if (legforward)
+        // ===== DRAW DINO =====
+        if (isJumping)
         {
-            DrawRectangle(dinoX + 5, dinoY + 60, 8, 15, BLACK);
-            DrawRectangle(dinoX + 25, dinoY + 60, 8, 8, BLACK);
+            DrawTexturePro(
+                dinoIdleTexture,
+                (Rectangle){0, 0, (float)dinoIdleTexture.width, (float)dinoIdleTexture.height},
+                (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
+                (Vector2){0, 0},
+                0.0f,
+                WHITE);
+        }
+        else if (isMoving)
+        {
+            if (dinoRunFrame == 0)
+            {
+                DrawTexturePro(
+                    dinoRun1Texture,
+                    (Rectangle){0, 0, (float)dinoRun1Texture.width, (float)dinoRun1Texture.height},
+                    (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+            }
+            else
+            {
+                DrawTexturePro(
+                    dinoRun2Texture,
+                    (Rectangle){0, 0, (float)dinoRun2Texture.width, (float)dinoRun2Texture.height},
+                    (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+            }
         }
         else
         {
-            DrawRectangle(dinoX + 5, dinoY + 60, 8, 8, BLACK);
-            DrawRectangle(dinoX + 25, dinoY + 60, 8, 15, BLACK);
+            DrawTexturePro(
+                dinoIdleTexture,
+                (Rectangle){0, 0, (float)dinoIdleTexture.width, (float)dinoIdleTexture.height},
+                (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
+                (Vector2){0, 0},
+                0.0f,
+                WHITE);
         }
 
-        // Draw cacti
+        // ===== DRAW CACTUS 1 (PLACEHOLDER - Green rectangle) =====
+        // TODO: Will replace with texture once images are ready
         DrawRectangle(cactusX, cactusY, cactusWidth, cactusHeight, GREEN);
+
+        // ===== DRAW CACTUS 2 (PLACEHOLDER - Dark green rectangle) =====
+        // TODO: Will replace with texture once images are ready
         DrawRectangle(cactus2X, cactus2Y, cactus2Width, cactus2Height, DARKGREEN);
 
-        // Draw bird (only when active)
+        // ===== DRAW BIRD (Using textures) =====
         if (birdActive)
         {
-            DrawCircle(birdX, birdY, 10, BLACK);
-            DrawTriangle(
-                {(float)birdX - 10, (float)birdY},
-                {(float)birdX - 25, (float)birdY - 10},
-                {(float)birdX - 25, (float)birdY + 10},
-                BLACK);
+            if (birdAnimationType == 0)
+                DrawTexture(birdUpTexture, birdX, birdY, WHITE);
+            else if (birdAnimationType == 1)
+                DrawTexture(birdLevelTexture, birdX, birdY, WHITE);
+            else
+                DrawTexture(birdDownTexture, birdX, birdY, WHITE);
         }
 
         // Draw UI
@@ -364,6 +425,14 @@ int main()
 
         EndDrawing();
     }
+
+    // Unload bird and dino textures
+    UnloadTexture(birdUpTexture);
+    UnloadTexture(birdLevelTexture);
+    UnloadTexture(birdDownTexture);
+    UnloadTexture(dinoIdleTexture);
+    UnloadTexture(dinoRun1Texture);
+    UnloadTexture(dinoRun2Texture);
 
     CloseWindow();
     return 0;
