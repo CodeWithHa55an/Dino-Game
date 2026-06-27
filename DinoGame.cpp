@@ -17,6 +17,22 @@ int main()
     Texture2D dinoIdleTexture = LoadTexture("Assets/Dino_Idle.png");
     Texture2D dinoRun1Texture = LoadTexture("Assets/Dino_Run.png");
     Texture2D dinoRun2Texture = LoadTexture("Assets/Dino_Run2.png");
+    // Summer
+    Texture2D desertBG = LoadTexture("Assets/Summer/DesertBG.png");
+    Texture2D bigCloud = LoadTexture("Assets/Summer/BigCloud.png");
+    Texture2D smallCloud = LoadTexture("Assets/Summer/SmallCloud.png");
+    Texture2D bigMountain = LoadTexture("Assets/Summer/BigDesertMountain.png");
+    Texture2D smallMountain = LoadTexture("Assets/Summer/SmallDesertMountain.png");
+    Texture2D sunTexture = LoadTexture("Assets/Summer/Sun.png");
+    Texture2D moonSummer = LoadTexture("Assets/Summer/Moon.png");
+    Texture2D soilGround = LoadTexture("Assets/Summer/SoilGround.png");
+    Texture2D heatWave = LoadTexture("Assets/Summer/HeatWave.png");
+    // Winter
+    Texture2D snowBG = LoadTexture("Assets/Winter/SnowBackground.png");
+    Texture2D winterCloud = LoadTexture("Assets/Winter/Cloud.png");
+    Texture2D fogTexture = LoadTexture("Assets/Winter/Fog.png");
+    Texture2D snowGround = LoadTexture("Assets/Winter/SnowGround.png");
+    Texture2D moonWinter = LoadTexture("Assets/Winter/Moon.png");
 
     // ==================== DINO VARIABLES ====================
     int dinoX = 100;
@@ -115,13 +131,30 @@ int main()
     int nextBirdSpawnScore = 5;
     bool birdSpawnedAtThisScore = false;
 
+    // ==================== DAY / NIGHT ====================
+    bool isNight = false;
+    int nextDayNightScore = 20; // Change every 20 points
+
+    int selectedEnvironment = 0;
+    // 0 = not selected
+    // 1 = Summer
+    // 2 = Winter
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
     {
         // Start screen
         if (!gameStarted)
         {
-            if (IsKeyPressed(KEY_ENTER))
+            if (IsKeyPressed(KEY_ONE))
+            {
+                selectedEnvironment = 1;
+            }
+
+            if (IsKeyPressed(KEY_TWO))
+            {
+                selectedEnvironment = 2;
+            }
+            if (IsKeyPressed(KEY_ENTER) && selectedEnvironment != 0)
             {
                 gameStarted = true;
                 dinoY = ground;
@@ -316,7 +349,7 @@ int main()
                 horizontalOverlap2 = cactus2X + cactus2Width > dinoX &&
                                      cactus2X < dinoX + dinoWidth;
                 verticalOverlap2 = dinoY + dinoHeight > cactus2Y &&
-                                    dinoY < cactus2Y + cactus2Height;
+                                   dinoY < cactus2Y + cactus2Height;
             }
 
             // ===== COLLISION DETECTION - BIRD =====
@@ -332,6 +365,12 @@ int main()
             {
                 gameOver = true;
                 dinoSpeed = 0;
+            }
+            // ===== DAY / NIGHT CYCLE =====
+            if (score >= nextDayNightScore)
+            {
+                isNight = !isNight;
+                nextDayNightScore += 20;
             }
         }
 
@@ -387,10 +426,18 @@ int main()
 
         // ===== DRAWING =====
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        if (isNight)
+        {
+            ClearBackground(DARKBLUE);
+        }
+        else
+        {
+            ClearBackground(RAYWHITE);
+        }
 
         // Draw ground line
-        DrawLine(0, 350, 800, 350, BLACK);
+        Color groundColor = isNight ? WHITE : BLACK;
+        DrawLine(0, 350, 800, 350, groundColor);
 
         // Draw clouds
         DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
@@ -526,6 +573,7 @@ int main()
         }
 
         // Draw UI
+        Color textColor = isNight ? WHITE : DARKGRAY;
         DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
         DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, DARKGRAY);
         DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
@@ -534,11 +582,23 @@ int main()
         // Start screen
         if (!gameStarted)
         {
-            DrawText("DINO GAME", 250, 120, 50, BLACK);
-            if ((GetTime() * 2) - (int)(GetTime() * 2) < 0.5)
-            {
-                DrawText("Press ENTER to Start", 220, 200, 30, DARKGRAY);
-            }
+            DrawText("DINO GAME", 260, 70, 45, BLACK);
+
+            DrawText("Select Environment", 240, 140, 30, DARKGRAY);
+
+            Color summerColor = BLACK;
+            Color winterColor = BLACK;
+
+            if (selectedEnvironment == 1)
+                summerColor = GREEN;
+
+            if (selectedEnvironment == 2)
+                winterColor = BLUE;
+
+            DrawText("Press 1 : Summer", 250, 190, 28, summerColor);
+            DrawText("Press 2 : Winter", 250, 230, 28, winterColor);
+
+            DrawText("Press ENTER to Start", 210, 310, 30, DARKGRAY);
         }
 
         // Game over screen
