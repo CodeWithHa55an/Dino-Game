@@ -43,7 +43,7 @@ int main()
     int dinoSpeed = 0;
     int gravity = 1;
     int jumpPower = 18;
-    int ground = 290;
+    int ground = 300;
     bool isJumping = false;
     bool isMoving = false;
     int dinoRunCounter = 0;
@@ -51,14 +51,14 @@ int main()
 
     // ==================== CACTUS VARIABLES ====================
     int cactusX = 800 + GetRandomValue(0, 300);
-    int cactusY = 350 - 50;
+    int cactusY = 360 - 50;
     int cactusWidth = 30;
     int cactusHeight = 50;
     int cactusType = 0;
     int cactusSpeed = 5;
 
     int cactus2X = 1400;
-    int cactus2Y = 350 - 50;
+    int cactus2Y = 360 - 50;
     int cactus2Width = 30;
     int cactus2Height = 50;
     int cactus2Type = 0;
@@ -114,7 +114,7 @@ int main()
 
     // ==================== BIRD VARIABLES ====================
     int birdX = 800;
-    int birdY = 220;
+    int birdY = 200;
     int birdWidth = 40;
     int birdHeight = 15;
     int birdSpeed = 7;
@@ -252,7 +252,7 @@ int main()
                 cactusX = 800 + GetRandomValue(0, 300);
                 cactusType = ChooseCactusType(score);
                 SetCactusSize(cactusType, cactusWidth, cactusHeight);
-                cactusY = 350 - cactusHeight;
+                cactusY = 360 - cactusHeight;
                 score = score + 1;
 
                 if (score > highscore)
@@ -278,7 +278,7 @@ int main()
                 {
                     cactus2Type = ChooseCactusType(score);
                     SetCactusSize(cactus2Type, cactus2Width, cactus2Height);
-                    cactus2Y = 350 - cactus2Height;
+                    cactus2Y = 360 - cactus2Height;
                     int gap = GetRandomValue(0, 40);
                     cactus2X = cactusX + cactusWidth + gap;
                 }
@@ -294,7 +294,7 @@ int main()
                 cactus2X = 900 + GetRandomValue(100, 220);
                 cactus2Type = ChooseCactusType(score);
                 SetCactusSize(cactus2Type, cactus2Width, cactus2Height);
-                cactus2Y = 350 - cactus2Height;
+                cactus2Y = 360 - cactus2Height;
                 score = score + 1;
 
                 if (score > highscore)
@@ -426,18 +426,44 @@ int main()
 
         // ===== DRAWING =====
         BeginDrawing();
-        if (isNight)
+        ClearBackground(WHITE);
+        // ==================== DRAW ENVIRONMENT ====================
+
+        if (selectedEnvironment == 1)
         {
-            ClearBackground(DARKBLUE);
+            // Summer Background
+            DrawTexture(desertBG, 0, 0, WHITE);
         }
-        else
+        else if (selectedEnvironment == 2)
         {
-            ClearBackground(RAYWHITE);
+            // Winter Background
+            DrawTexture(snowBG, 0, 0, WHITE);
+        }
+        // ===== DRAW GROUND =====
+        if (selectedEnvironment == 1)
+        {
+            DrawTexturePro(
+                soilGround,
+                (Rectangle){0, 0, (float)soilGround.width, (float)soilGround.height},
+                (Rectangle){0, 340, 800,80},
+                (Vector2){0, 0},
+                0,
+                WHITE);
+        }
+        else if (selectedEnvironment == 2)
+        {
+            DrawTexturePro(
+                snowGround,
+                (Rectangle){0, 0, (float)snowGround.width, (float)snowGround.height},
+                (Rectangle){0, 340, 800,80},
+                (Vector2){0, 0},
+                0,
+                WHITE);
         }
 
         // Draw ground line
         Color groundColor = isNight ? WHITE : BLACK;
-        DrawLine(0, 350, 800, 350, groundColor);
+        
 
         // Draw clouds
         DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
