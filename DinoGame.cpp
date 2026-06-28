@@ -18,7 +18,7 @@ int main()
     Texture2D dinoRun1Texture = LoadTexture("Assets/Dino_Run.png");
     Texture2D dinoRun2Texture = LoadTexture("Assets/Dino_Run2.png");
     // Summer
-    Texture2D desertBG = LoadTexture("Assets/Summer/DesertBG.png");
+    Texture2D desertBG = LoadTexture("Assets/Summer/DesertBG1 copy.png");
     Texture2D bigCloud = LoadTexture("Assets/Summer/BigCloud.png");
     Texture2D smallCloud = LoadTexture("Assets/Summer/SmallCloud.png");
     Texture2D bigMountain = LoadTexture("Assets/Summer/BigDesertMountain.png");
@@ -112,6 +112,12 @@ int main()
     int cloud3X = 1400;
     int cloud3Y = 60;
 
+    // ==================== MOUNTAINS ====================
+    float bigMountainX = 0;
+    float smallMountainX = 450;
+
+    float mountainSpeed = 1.0f;
+
     // ==================== BIRD VARIABLES ====================
     int birdX = 800;
     int birdY = 200;
@@ -177,6 +183,16 @@ int main()
             }
 
             isMoving = false;
+
+            if (bigMountainX <= -800)
+            {
+                bigMountainX = 800;
+            }
+
+            if (smallMountainX <= -800)
+            {
+                smallMountainX = 800;
+            }
             if (IsKeyDown(KEY_RIGHT))
             {
                 dinoX = dinoX + 5;
@@ -404,6 +420,7 @@ int main()
         }
 
         // ===== CLOUD MOVEMENT =====
+        if(selectedEnvironment==2){
         cloud1X--;
         cloud2X--;
         cloud3X--;
@@ -423,21 +440,30 @@ int main()
             cloud3X = 800;
             cloud3Y = GetRandomValue(40, 150);
         }
-
+    }
         // ===== DRAWING =====
         BeginDrawing();
         ClearBackground(WHITE);
         // ==================== DRAW ENVIRONMENT ====================
-
         if (selectedEnvironment == 1)
         {
-            // Summer Background
-            DrawTexture(desertBG, 0, 0, WHITE);
+            DrawTexturePro(
+                desertBG,
+                (Rectangle){0, 0, (float)desertBG.width, (float)desertBG.height},
+                (Rectangle){0, 0, 800, 420},
+                (Vector2){0, 0},
+                0,
+                WHITE);
         }
         else if (selectedEnvironment == 2)
         {
-            // Winter Background
-            DrawTexture(snowBG, 0, 0, WHITE);
+            DrawTexturePro(
+                snowBG,
+                (Rectangle){0, 0, (float)snowBG.width, (float)snowBG.height},
+                (Rectangle){0, 0, 800, 420},
+                (Vector2){0, 0},
+                0,
+                WHITE);
         }
         // ===== DRAW GROUND =====
         if (selectedEnvironment == 1)
@@ -445,7 +471,7 @@ int main()
             DrawTexturePro(
                 soilGround,
                 (Rectangle){0, 0, (float)soilGround.width, (float)soilGround.height},
-                (Rectangle){0, 340, 800,80},
+                (Rectangle){0, 340, 800, 80},
                 (Vector2){0, 0},
                 0,
                 WHITE);
@@ -455,7 +481,7 @@ int main()
             DrawTexturePro(
                 snowGround,
                 (Rectangle){0, 0, (float)snowGround.width, (float)snowGround.height},
-                (Rectangle){0, 340, 800,80},
+                (Rectangle){0, 340, 800, 80},
                 (Vector2){0, 0},
                 0,
                 WHITE);
@@ -463,9 +489,9 @@ int main()
 
         // Draw ground line
         Color groundColor = isNight ? WHITE : BLACK;
-        
 
         // Draw clouds
+        if(selectedEnvironment==2){
         DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
         DrawCircle(cloud1X + 20, cloud1Y, 20, LIGHTGRAY);
         DrawCircle(cloud1X + 40, cloud1Y, 20, LIGHTGRAY);
@@ -477,7 +503,7 @@ int main()
         DrawCircle(cloud3X, cloud3Y, 20, LIGHTGRAY);
         DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
         DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
-
+        }
         // ===== DRAW DINO =====
         if (isJumping)
         {
@@ -649,6 +675,8 @@ int main()
     UnloadTexture(dinoIdleTexture);
     UnloadTexture(dinoRun1Texture);
     UnloadTexture(dinoRun2Texture);
+    UnloadTexture(desertBG);
+    UnloadTexture(snowBG);
 
     CloseWindow();
     return 0;
