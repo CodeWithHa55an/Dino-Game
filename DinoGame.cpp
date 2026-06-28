@@ -160,16 +160,23 @@ int main()
     {
         if (winter)
         {
-            if (type == 1) return cactusShortSnowTexture;
-            if (type == 2) return cactusVeryTallSnowTexture;
-            if (type == 3) return cactusTallSnowTexture;
-            if (type == 4) return cactusFrostedTexture;
+            if (type == 1)
+                return cactusShortSnowTexture;
+            if (type == 2)
+                return cactusVeryTallSnowTexture;
+            if (type == 3)
+                return cactusTallSnowTexture;
+            if (type == 4)
+                return cactusFrostedTexture;
             return cactusSnowTexture;
         }
 
-        if (type == 1) return cactusShortTexture;
-        if (type == 2) return cactusVeryTallTexture;
-        if (type == 3) return cactusTallTexture;
+        if (type == 1)
+            return cactusShortTexture;
+        if (type == 2)
+            return cactusVeryTallTexture;
+        if (type == 3)
+            return cactusTallTexture;
         return cactusTexture;
     };
 
@@ -482,6 +489,18 @@ int main()
                 (Vector2){0, 0},
                 0,
                 WHITE);
+            // ✨ glow first
+            DrawCircle(690, 80, 60, Fade(YELLOW, 0.15f));
+            DrawCircle(690, 80, 45, Fade(YELLOW, 0.25f));
+            DrawCircle(690, 80, 30, Fade(YELLOW, 0.35f));
+            // 🌞 SUN (Summer only)
+            DrawTexturePro(
+                sunTexture,
+                (Rectangle){0, 0, (float)sunTexture.width, (float)sunTexture.height},
+                (Rectangle){650, 40, 80, 80}, // position + size
+                (Vector2){0, 0},
+                0.0f,
+                WHITE);
         }
         else if (selectedEnvironment == 2)
         {
@@ -599,79 +618,79 @@ int main()
                 WHITE);
         }
 
-    // ===== DRAW BIRD (Using textures with scaling) =====
-    if (birdActive)
-    {
-        if (birdAnimationType == 0)
+        // ===== DRAW BIRD (Using textures with scaling) =====
+        if (birdActive)
         {
-            DrawTexturePro(
-                birdUpTexture,
-                (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
-                (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                (Vector2){0, 0},
-                0.0f,
-                WHITE);
+            if (birdAnimationType == 0)
+            {
+                DrawTexturePro(
+                    birdUpTexture,
+                    (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
+                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+            }
+            else if (birdAnimationType == 1)
+            {
+                DrawTexturePro(
+                    birdLevel2Texture,
+                    (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
+                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+            }
+            else
+            {
+                DrawTexturePro(
+                    birdDown2Texture,
+                    (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
+                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+            }
         }
-        else if (birdAnimationType == 1)
+
+        // Draw UI
+        Color textColor = isNight ? WHITE : DARKGRAY;
+        DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
+        DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, DARKGRAY);
+        DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
+        DrawText(TextFormat("High Score: %d", highscore), 600, 50, 20, DARKGRAY);
+
+        // Start screen
+        if (!gameStarted)
         {
-            DrawTexturePro(
-                birdLevel2Texture,
-                (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
-                (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                (Vector2){0, 0},
-                0.0f,
-                WHITE);
+            DrawText("DINO GAME", 260, 70, 45, BLACK);
+
+            DrawText("Select Environment", 240, 140, 30, DARKGRAY);
+
+            Color summerColor = BLACK;
+            Color winterColor = BLACK;
+
+            if (selectedEnvironment == 1)
+                summerColor = GREEN;
+
+            if (selectedEnvironment == 2)
+                winterColor = BLUE;
+
+            DrawText("Press 1 : Summer", 250, 190, 28, summerColor);
+            DrawText("Press 2 : Winter", 250, 230, 28, winterColor);
+
+            DrawText("Press ENTER to Start", 210, 310, 30, DARKGRAY);
         }
-        else
+
+        // Game over screen
+        if (gameOver)
         {
-            DrawTexturePro(
-                birdDown2Texture,
-                (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
-                (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                (Vector2){0, 0},
-                0.0f,
-                WHITE);
+            DrawText("GAME OVER", 280, 150, 40, RED);
+            DrawText("Press R to restart", 285, 195, 25, DARKGRAY);
+            DrawText(TextFormat("High Score: %d", highscore), 320, 240, 25, BLUE);
         }
-    }
 
-    // Draw UI
-    Color textColor = isNight ? WHITE : DARKGRAY;
-    DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
-    DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, DARKGRAY);
-    DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
-    DrawText(TextFormat("High Score: %d", highscore), 600, 50, 20, DARKGRAY);
-
-    // Start screen
-    if (!gameStarted)
-    {
-        DrawText("DINO GAME", 260, 70, 45, BLACK);
-
-        DrawText("Select Environment", 240, 140, 30, DARKGRAY);
-
-        Color summerColor = BLACK;
-        Color winterColor = BLACK;
-
-        if (selectedEnvironment == 1)
-            summerColor = GREEN;
-
-        if (selectedEnvironment == 2)
-            winterColor = BLUE;
-
-        DrawText("Press 1 : Summer", 250, 190, 28, summerColor);
-        DrawText("Press 2 : Winter", 250, 230, 28, winterColor);
-
-        DrawText("Press ENTER to Start", 210, 310, 30, DARKGRAY);
-    }
-
-    // Game over screen
-    if (gameOver)
-    {
-        DrawText("GAME OVER", 280, 150, 40, RED);
-        DrawText("Press R to restart", 285, 195, 25, DARKGRAY);
-        DrawText(TextFormat("High Score: %d", highscore), 320, 240, 25, BLUE);
-    }
-
-    EndDrawing();
+        EndDrawing();
     }
 
     // Unload bird, cactus, and dino textures
