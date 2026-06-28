@@ -10,6 +10,7 @@ int main()
     Texture2D birdUpTexture = LoadTexture("Assets/Bird.png");
     Texture2D birdLevel2Texture = LoadTexture("Assets/Bird_Level2.png");
     Texture2D birdDown2Texture = LoadTexture("Assets/Bird_Down2.png");
+    // Summer cactuses
     Texture2D cactusTexture = LoadTexture("Assets/Cactus.png");
     Texture2D cactusShortTexture = LoadTexture("Assets/Cactus_Short.png");
     Texture2D cactusTallTexture = LoadTexture("Assets/Cactus_Tall.png");
@@ -33,7 +34,12 @@ int main()
     Texture2D fogTexture = LoadTexture("Assets/Winter/Fog.png");
     Texture2D snowGround = LoadTexture("Assets/Winter/SnowGround.png");
     Texture2D moonWinter = LoadTexture("Assets/Winter/Moon.png");
-
+    // Winter Cactus
+    Texture2D cactusSnowTexture = LoadTexture("Assets/Winter/CactusSnowy.png");
+    Texture2D cactusShortSnowTexture = LoadTexture("Assets/Winter/CactusShortSnow.png");
+    Texture2D cactusTallSnowTexture = LoadTexture("Assets/Winter/CactusTallSnowy.png");
+    Texture2D cactusVeryTallSnowTexture = LoadTexture("Assets/Winter/CactusVeryTallSnowy.png");
+    Texture2D cactusFrostedTexture = LoadTexture("Assets/Winter/CactusFrosted.png");
     // ==================== DINO VARIABLES ====================
     int dinoX = 100;
     int dinoY = 290;
@@ -88,22 +94,6 @@ int main()
         }
     };
 
-    auto ChooseCactusType = [&](int score)
-    {
-        if (score < 20)
-        {
-            return GetRandomValue(0, 1);
-        }
-        else if (score < 30)
-        {
-            return GetRandomValue(0, 2);
-        }
-        else
-        {
-            return GetRandomValue(0, 3);
-        }
-    };
-
     // ==================== CLOUD VARIABLES ====================
     int cloud1X = 800;
     int cloud1Y = 80;
@@ -145,6 +135,44 @@ int main()
     // 0 = not selected
     // 1 = Summer
     // 2 = Winter
+
+    auto ChooseCactusType = [&](int score)
+    {
+        if (selectedEnvironment == 1)
+        {
+            if (score < 20)
+                return GetRandomValue(0, 1);
+            else if (score < 30)
+                return GetRandomValue(0, 2);
+            else
+                return GetRandomValue(0, 3);
+        }
+        else
+        {
+            if (score < 20)
+                return GetRandomValue(0, 2);
+            else
+                return GetRandomValue(0, 4);
+        }
+    };
+
+    auto GetCactusTextureForType = [&](int type, bool winter)
+    {
+        if (winter)
+        {
+            if (type == 1) return cactusShortSnowTexture;
+            if (type == 2) return cactusVeryTallSnowTexture;
+            if (type == 3) return cactusTallSnowTexture;
+            if (type == 4) return cactusFrostedTexture;
+            return cactusSnowTexture;
+        }
+
+        if (type == 1) return cactusShortTexture;
+        if (type == 2) return cactusVeryTallTexture;
+        if (type == 3) return cactusTallTexture;
+        return cactusTexture;
+    };
+
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
     {
@@ -261,7 +289,6 @@ int main()
                     birdAnimationCounter = 0;
                 }
             }
-
             // ===== CACTUS 1 RESET =====
             if (cactusX < -cactusWidth)
             {
@@ -420,27 +447,28 @@ int main()
         }
 
         // ===== CLOUD MOVEMENT =====
-        if(selectedEnvironment==2){
-        cloud1X--;
-        cloud2X--;
-        cloud3X--;
+        if (selectedEnvironment == 2)
+        {
+            cloud1X--;
+            cloud2X--;
+            cloud3X--;
 
-        if (cloud1X < -60)
-        {
-            cloud1X = 800;
-            cloud1Y = GetRandomValue(40, 150);
+            if (cloud1X < -60)
+            {
+                cloud1X = 800;
+                cloud1Y = GetRandomValue(40, 150);
+            }
+            if (cloud2X < -60)
+            {
+                cloud2X = 800;
+                cloud2Y = GetRandomValue(40, 150);
+            }
+            if (cloud3X < -60)
+            {
+                cloud3X = 800;
+                cloud3Y = GetRandomValue(40, 150);
+            }
         }
-        if (cloud2X < -60)
-        {
-            cloud2X = 800;
-            cloud2Y = GetRandomValue(40, 150);
-        }
-        if (cloud3X < -60)
-        {
-            cloud3X = 800;
-            cloud3Y = GetRandomValue(40, 150);
-        }
-    }
         // ===== DRAWING =====
         BeginDrawing();
         ClearBackground(WHITE);
@@ -491,18 +519,19 @@ int main()
         Color groundColor = isNight ? WHITE : BLACK;
 
         // Draw clouds
-        if(selectedEnvironment==2){
-        DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
-        DrawCircle(cloud1X + 20, cloud1Y, 20, LIGHTGRAY);
-        DrawCircle(cloud1X + 40, cloud1Y, 20, LIGHTGRAY);
+        if (selectedEnvironment == 2)
+        {
+            DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
+            DrawCircle(cloud1X + 20, cloud1Y, 20, LIGHTGRAY);
+            DrawCircle(cloud1X + 40, cloud1Y, 20, LIGHTGRAY);
 
-        DrawCircle(cloud2X, cloud2Y, 20, LIGHTGRAY);
-        DrawCircle(cloud2X + 20, cloud2Y, 20, LIGHTGRAY);
-        DrawCircle(cloud2X + 40, cloud2Y, 20, LIGHTGRAY);
+            DrawCircle(cloud2X, cloud2Y, 20, LIGHTGRAY);
+            DrawCircle(cloud2X + 20, cloud2Y, 20, LIGHTGRAY);
+            DrawCircle(cloud2X + 40, cloud2Y, 20, LIGHTGRAY);
 
-        DrawCircle(cloud3X, cloud3Y, 20, LIGHTGRAY);
-        DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
-        DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
+            DrawCircle(cloud3X, cloud3Y, 20, LIGHTGRAY);
+            DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
+            DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
         }
         // ===== DRAW DINO =====
         if (isJumping)
@@ -548,18 +577,8 @@ int main()
                 0.0f,
                 WHITE);
         }
-
         // ===== DRAW CACTUS 1 =====
-        Texture2D cactus1Texture;
-        if (cactusType == 1)
-            cactus1Texture = cactusShortTexture;
-        else if (cactusType == 2)
-            cactus1Texture = cactusVeryTallTexture;
-        else if (cactusType == 3)
-            cactus1Texture = cactusTallTexture;
-        else
-            cactus1Texture = cactusTexture;
-
+        Texture2D cactus1Texture = GetCactusTextureForType(cactusType, selectedEnvironment == 2);
         DrawTexturePro(
             cactus1Texture,
             (Rectangle){0, 0, (float)cactus1Texture.width, (float)cactus1Texture.height},
@@ -570,16 +589,7 @@ int main()
 
         if (secondCactusActive)
         {
-            Texture2D cactus2TextureToDraw;
-            if (cactus2Type == 1)
-                cactus2TextureToDraw = cactusShortTexture;
-            else if (cactus2Type == 2)
-                cactus2TextureToDraw = cactusVeryTallTexture;
-            else if (cactus2Type == 3)
-                cactus2TextureToDraw = cactusTallTexture;
-            else
-                cactus2TextureToDraw = cactusTexture;
-
+            Texture2D cactus2TextureToDraw = GetCactusTextureForType(cactus2Type, selectedEnvironment == 2);
             DrawTexturePro(
                 cactus2TextureToDraw,
                 (Rectangle){0, 0, (float)cactus2TextureToDraw.width, (float)cactus2TextureToDraw.height},
@@ -589,79 +599,79 @@ int main()
                 WHITE);
         }
 
-        // ===== DRAW BIRD (Using textures with scaling) =====
-        if (birdActive)
+    // ===== DRAW BIRD (Using textures with scaling) =====
+    if (birdActive)
+    {
+        if (birdAnimationType == 0)
         {
-            if (birdAnimationType == 0)
-            {
-                DrawTexturePro(
-                    birdUpTexture,
-                    (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
-                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                    (Vector2){0, 0},
-                    0.0f,
-                    WHITE);
-            }
-            else if (birdAnimationType == 1)
-            {
-                DrawTexturePro(
-                    birdLevel2Texture,
-                    (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
-                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                    (Vector2){0, 0},
-                    0.0f,
-                    WHITE);
-            }
-            else
-            {
-                DrawTexturePro(
-                    birdDown2Texture,
-                    (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
-                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                    (Vector2){0, 0},
-                    0.0f,
-                    WHITE);
-            }
+            DrawTexturePro(
+                birdUpTexture,
+                (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
+                (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                (Vector2){0, 0},
+                0.0f,
+                WHITE);
         }
-
-        // Draw UI
-        Color textColor = isNight ? WHITE : DARKGRAY;
-        DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
-        DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, DARKGRAY);
-        DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
-        DrawText(TextFormat("High Score: %d", highscore), 600, 50, 20, DARKGRAY);
-
-        // Start screen
-        if (!gameStarted)
+        else if (birdAnimationType == 1)
         {
-            DrawText("DINO GAME", 260, 70, 45, BLACK);
-
-            DrawText("Select Environment", 240, 140, 30, DARKGRAY);
-
-            Color summerColor = BLACK;
-            Color winterColor = BLACK;
-
-            if (selectedEnvironment == 1)
-                summerColor = GREEN;
-
-            if (selectedEnvironment == 2)
-                winterColor = BLUE;
-
-            DrawText("Press 1 : Summer", 250, 190, 28, summerColor);
-            DrawText("Press 2 : Winter", 250, 230, 28, winterColor);
-
-            DrawText("Press ENTER to Start", 210, 310, 30, DARKGRAY);
+            DrawTexturePro(
+                birdLevel2Texture,
+                (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
+                (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                (Vector2){0, 0},
+                0.0f,
+                WHITE);
         }
-
-        // Game over screen
-        if (gameOver)
+        else
         {
-            DrawText("GAME OVER", 280, 150, 40, RED);
-            DrawText("Press R to restart", 285, 195, 25, DARKGRAY);
-            DrawText(TextFormat("High Score: %d", highscore), 320, 240, 25, BLUE);
+            DrawTexturePro(
+                birdDown2Texture,
+                (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
+                (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                (Vector2){0, 0},
+                0.0f,
+                WHITE);
         }
+    }
 
-        EndDrawing();
+    // Draw UI
+    Color textColor = isNight ? WHITE : DARKGRAY;
+    DrawText("Press SPACE to JUMP", 10, 10, 20, DARKGRAY);
+    DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, DARKGRAY);
+    DrawText(TextFormat("Score: %d", score), 650, 20, 20, DARKGRAY);
+    DrawText(TextFormat("High Score: %d", highscore), 600, 50, 20, DARKGRAY);
+
+    // Start screen
+    if (!gameStarted)
+    {
+        DrawText("DINO GAME", 260, 70, 45, BLACK);
+
+        DrawText("Select Environment", 240, 140, 30, DARKGRAY);
+
+        Color summerColor = BLACK;
+        Color winterColor = BLACK;
+
+        if (selectedEnvironment == 1)
+            summerColor = GREEN;
+
+        if (selectedEnvironment == 2)
+            winterColor = BLUE;
+
+        DrawText("Press 1 : Summer", 250, 190, 28, summerColor);
+        DrawText("Press 2 : Winter", 250, 230, 28, winterColor);
+
+        DrawText("Press ENTER to Start", 210, 310, 30, DARKGRAY);
+    }
+
+    // Game over screen
+    if (gameOver)
+    {
+        DrawText("GAME OVER", 280, 150, 40, RED);
+        DrawText("Press R to restart", 285, 195, 25, DARKGRAY);
+        DrawText(TextFormat("High Score: %d", highscore), 320, 240, 25, BLUE);
+    }
+
+    EndDrawing();
     }
 
     // Unload bird, cactus, and dino textures
@@ -677,6 +687,11 @@ int main()
     UnloadTexture(dinoRun2Texture);
     UnloadTexture(desertBG);
     UnloadTexture(snowBG);
+    UnloadTexture(cactusSnowTexture);
+    UnloadTexture(cactusShortSnowTexture);
+    UnloadTexture(cactusTallSnowTexture);
+    UnloadTexture(cactusVeryTallSnowTexture);
+    UnloadTexture(cactusFrostedTexture);
 
     CloseWindow();
     return 0;
