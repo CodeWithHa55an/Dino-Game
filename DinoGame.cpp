@@ -658,6 +658,49 @@ int main()
                 0.0f,
                 WHITE);
         }
+        if (summerPhase == 1)
+        {
+            // torch stick
+            DrawRectangle(
+                dinoX + 32,
+                dinoY + 20,
+                3,
+                15,
+                BROWN);
+
+            // flame
+            DrawCircle(
+                dinoX + 33,
+                dinoY + 18,
+                4,
+                ORANGE);
+
+            DrawCircle(
+                dinoX + 33,
+                dinoY + 18,
+                2,
+                YELLOW);
+        }
+        if (summerPhase == 1)
+        {
+            DrawCircle(
+                dinoX + 33,
+                dinoY + 18,
+                90,
+                Fade(YELLOW, 0.01f));
+
+            DrawCircle(
+                dinoX + 33,
+                dinoY + 18,
+                60,
+                Fade(ORANGE, 0.02f));
+
+            DrawCircle(
+                dinoX + 33,
+                dinoY + 18,
+                35,
+                Fade(YELLOW, 0.03f));
+        }
         // ===== DRAW CACTUS 1 =====
         Texture2D cactus1Texture = GetCactusTextureForType(cactusType, selectedEnvironment == 2);
         if (summerPhase == 1)
