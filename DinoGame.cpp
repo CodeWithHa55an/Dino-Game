@@ -1,9 +1,17 @@
 #include "raylib.h"
 
+struct RainDrop
+{
+    float x;
+    float y;
+    float speed;
+};
 int main()
 {
+    const int screenWidth = 800;
+    const int screenHeight = 420;
     // ==================== SETUP ====================
-    InitWindow(800, 420, "Dino Game");
+    InitWindow(screenWidth, screenHeight, "Dino Game");
     SetTargetFPS(60);
 
     // Load textures from the correct Assets folder
@@ -28,6 +36,7 @@ int main()
     Texture2D moonSummer = LoadTexture("Assets/Summer/Moon.png");
     Texture2D soilGround = LoadTexture("Assets/Summer/SoilGround.png");
     Texture2D heatWave = LoadTexture("Assets/Summer/HeatWave.png");
+    Texture2D rainycloud = LoadTexture("Assets/Summer/RainyCloud.png");
     // Winter
     Texture2D snowBG = LoadTexture("Assets/Winter/SnowBackground.png");
     Texture2D winterCloud = LoadTexture("Assets/Winter/Cloud.png");
@@ -93,7 +102,10 @@ int main()
             height = 50;
         }
     };
+    const int rainCloudCount = 18;
 
+    float rainCloudX[rainCloudCount];
+    float rainCloudY[rainCloudCount];
     // ==================== CLOUD VARIABLES ====================
     int cloud1X = 800;
     int cloud1Y = 80;
@@ -123,9 +135,11 @@ int main()
     bool gameOver = false;
     int score = 0;
     int highscore = 0;
-
     int nextBirdSpawnScore = 5;
     bool birdSpawnedAtThisScore = false;
+    // Rain
+    const int rainCount = 150;
+    RainDrop rain[rainCount];
 
     // ==================== DAY / NIGHT ====================
     bool isNight = false;
@@ -185,7 +199,11 @@ int main()
             return cactusTallTexture;
         return cactusTexture;
     };
-
+    for (int i = 0; i < rainCloudCount; i++)
+    {
+        rainCloudX[i] = (i % 6) * 140 - 30;
+        rainCloudY[i] = 20 + (i / 6) * 45;
+    }
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
     {
@@ -300,6 +318,19 @@ int main()
                 {
                     birdAnimationType = (birdAnimationType + 1) % 3;
                     birdAnimationCounter = 0;
+                }
+            }
+            if (summerPhase == 2)
+            {
+                for (int i = 0; i < rainCount; i++)
+                {
+                    rain[i].y += rain[i].speed;
+
+                    if (rain[i].y > screenHeight)
+                    {
+                        rain[i].y = GetRandomValue(-100, 0);
+                        rain[i].x = GetRandomValue(0, screenWidth);
+                    }
                 }
             }
             // ===== CACTUS 1 RESET =====
@@ -422,28 +453,23 @@ int main()
                 gameOver = true;
                 dinoSpeed = 0;
             }
-            int cycleScore = score % 80;
+            int cycleScore = score % 101;
 
-            if (cycleScore < 20)
+            if (cycleScore <= 2)
             {
-                summerPhase = 0; // Day
+                summerPhase = 0; // Sunny
             }
-            else if (cycleScore < 40)
+            else if (cycleScore <= 5)
             {
                 summerPhase = 1; // Night
             }
-            else if (cycleScore < 60)
+            else if (cycleScore <= 7)
             {
-                summerPhase = 2; // Cloudy
+                summerPhase = 0; // Sunny
             }
             else
             {
-                summerPhase = 3; // Heat / Sunny
-            }
-            // For quick testing: force night when score >= 5
-            if (score >= 5)
-            {
-                summerPhase = 1;
+                summerPhase = 2; // Rain
             }
         }
         // ===== RESTART LOGIC =====
@@ -506,15 +532,17 @@ int main()
         // ==================== DRAW ENVIRONMENT ====================
         if (selectedEnvironment == 1)
         {
-            // BACKGROUND tint system (we will enhance it)
+            // BACKGROUND tint system
             Color skyTint = WHITE;
 
             if (summerPhase == 1)
-                skyTint = (Color){60, 60, 100, 255}; // night
+            {
+                skyTint = (Color){60, 60, 100, 255}; // Night
+            }
             else if (summerPhase == 2)
-                skyTint = (Color){180, 180, 180, 255}; // cloudy
-            else if (summerPhase == 3)
-                skyTint = (Color){255, 240, 180, 255}; // hot sun
+            {
+                skyTint = (Color){170, 185, 195, 255}; // Rain (dark cloudy sky)
+            }
 
             DrawTexturePro(
                 desertBG,
@@ -525,18 +553,8 @@ int main()
                 skyTint);
 
             // 🌞 SUN / 🌙 MOON SWITCH
-            if (summerPhase == 1)
-            {
-                // MOON
-                DrawTexturePro(
-                    moonSummer,
-                    (Rectangle){0, 0, (float)moonSummer.width, (float)moonSummer.height},
-                    (Rectangle){650, 50, 70, 70},
-                    (Vector2){0, 0},
-                    0,
-                    WHITE);
-            }
-            else
+            // 🌞 SUN / 🌙 MOON SWITCH
+            if (summerPhase == 0)
             {
                 // SUN
                 DrawTexturePro(
@@ -547,14 +565,26 @@ int main()
                     0,
                     WHITE);
 
-                // 🌞 Glow effect (only day + heat)
-                if (summerPhase == 0 || summerPhase == 3)
-                {
-                    DrawCircle(690, 90, 60, Fade(YELLOW, 0.15f));
-                    DrawCircle(690, 90, 40, Fade(YELLOW, 0.25f));
-                    DrawCircle(690, 90, 25, Fade(YELLOW, 0.35f));
-                }
+                // Glow effect
+                DrawCircle(690, 90, 60, Fade(YELLOW, 0.15f));
+                DrawCircle(690, 90, 40, Fade(YELLOW, 0.25f));
+                DrawCircle(690, 90, 25, Fade(YELLOW, 0.35f));
             }
+            else if (summerPhase == 1)
+            {
+                // MOON
+                DrawTexturePro(
+                    moonSummer,
+                    (Rectangle){0, 0, (float)moonSummer.width, (float)moonSummer.height},
+                    (Rectangle){650, 50, 70, 70},
+                    (Vector2){0, 0},
+                    0,
+                    WHITE);
+            }
+
+            // summerPhase == 2
+            // Draw neither Sun nor Moon.
+            // Clouds will cover the sky.
         }
         else if (selectedEnvironment == 2)
         {
@@ -614,6 +644,54 @@ int main()
             DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
             DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
         }
+        // Rain clouds
+
+        // Drawing Rain
+        if (summerPhase == 2)
+{
+    // Top row
+    for (int x = -40; x < screenWidth + 200; x += 180)
+    {
+        DrawTextureEx(
+            rainycloud,
+            (Vector2){(float)x, -60},
+            0.0f,
+            0.45f,
+            WHITE);
+    }
+
+    // Middle row
+    for (int x = -150; x < screenWidth + 200; x += 180)
+    {
+        DrawTextureEx(
+            rainycloud,
+            (Vector2){(float)x, -15},
+            0.0f,
+            0.45f,
+            Fade(WHITE, 0.9f));
+    }
+
+    // Bottom row
+    for (int x = -50; x < screenWidth + 200; x += 180)
+    {
+        DrawTextureEx(
+            rainycloud,
+            (Vector2){(float)x, 30},
+            0.0f,
+            0.40f,
+            Fade(WHITE, 0.85f));
+    }
+
+    // Rain
+    for (int i = 0; i < rainCount; i++)
+    {
+        DrawLineEx(
+            (Vector2){rain[i].x, rain[i].y},
+            (Vector2){rain[i].x - 4, rain[i].y + 16},
+            2.2f,
+            SKYBLUE);
+    }
+}
         // ===== DRAW DINO =====
         if (isJumping)
         {
