@@ -135,7 +135,7 @@ int main()
     bool gameOver = false;
     int score = 0;
     int highscore = 0;
-    int nextBirdSpawnScore = 5;
+    int nextBirdSpawnScore = 50;
     bool birdSpawnedAtThisScore = false;
     // Rain
     const int rainCount = 80;
@@ -435,7 +435,7 @@ int main()
 
             if (score > nextBirdSpawnScore && birdSpawnedAtThisScore && !birdActive)
             {
-                nextBirdSpawnScore += 20;
+                nextBirdSpawnScore += 10;
                 birdSpawnedAtThisScore = false;
             }
 
@@ -470,7 +470,7 @@ int main()
                 gameOver = true;
                 dinoSpeed = 0;
             }
-            int cycleScore = score % 25;
+            int cycleScore = score % 101;
 
             if (cycleScore <= 20)
             {
