@@ -364,7 +364,7 @@ int main()
                     highscore = score;
                 }
 
-                if (score % 5 == 0 && cactusSpeed < 15)
+                if (score % 10 == 0 && score != 0 && cactusSpeed < 15)
                 {
                     cactusSpeed++;
                 }
@@ -595,7 +595,7 @@ int main()
             }
             else
             {
-                //Glow Of Sun
+                // Glow Of Sun
                 DrawCircle(590, 70, 70, Fade(YELLOW, 0.08f));
                 DrawCircle(590, 70, 55, Fade(ORANGE, 0.12f));
                 DrawCircle(590, 70, 40, Fade(YELLOW, 0.18f));
