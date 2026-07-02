@@ -27,6 +27,7 @@ int main()
     Texture2D dinoRun1Texture = LoadTexture("Assets/Dino_Run.png");
     Texture2D dinoRun2Texture = LoadTexture("Assets/Dino_Run2.png");
     Texture2D dinoJump = LoadTexture("Assets/Dino_Jump.png");
+    Texture2D dinoCrouchTexture = LoadTexture("Assets/Dino_Crouch.png");
     // Summer
     Texture2D desertBG = LoadTexture("Assets/Summer/DesertBG1 copy.png");
     Texture2D bigCloud = LoadTexture("Assets/Summer/BigCloud.png");
@@ -156,6 +157,7 @@ int main()
     // 1 = Night (20–40)
     // 2 = Cloudy (40–60)
     // 3 = Sunny Heat (60–80)
+    bool isCrouching = false;
 
     auto ChooseCactusType = [&](int score)
     {
@@ -235,6 +237,14 @@ int main()
                 dinoSpeed = 0;
                 isJumping = false;
             }
+        }
+        if (IsKeyDown(KEY_DOWN) && !isJumping)
+        {
+            isCrouching = true;
+        }
+        else
+        {
+            isCrouching = false;
         }
 
         // Only update game if NOT game over
@@ -721,7 +731,17 @@ int main()
             }
         }
         // ===== DRAW DINO =====
-        if (isJumping)
+        if (isCrouching)
+        {
+            DrawTexturePro(
+                dinoCrouchTexture,
+                (Rectangle){0, 0, (float)dinoCrouchTexture.width, (float)dinoCrouchTexture.height},
+                (Rectangle){(float)dinoX, (float)(dinoY + 20), 50.0f, 40.0f},
+                (Vector2){0, 0},
+                0.0f,
+                WHITE);
+        }
+        else if (isJumping)
         {
             DrawTexturePro(
                 dinoJump,
@@ -971,6 +991,7 @@ int main()
     UnloadTexture(cactusVeryTallSnowTexture);
     UnloadTexture(cactusFrostedTexture);
     UnloadTexture(dinoJump);
+    UnloadTexture(dinoCrouchTexture);
 
     CloseWindow();
     return 0;
