@@ -26,6 +26,7 @@ int main()
     Texture2D dinoIdleTexture = LoadTexture("Assets/Dino_Idle.png");
     Texture2D dinoRun1Texture = LoadTexture("Assets/Dino_Run.png");
     Texture2D dinoRun2Texture = LoadTexture("Assets/Dino_Run2.png");
+    Texture2D dinoJump = LoadTexture("Assets/Dino_Jump.png");
     // Summer
     Texture2D desertBG = LoadTexture("Assets/Summer/DesertBG1 copy.png");
     Texture2D bigCloud = LoadTexture("Assets/Summer/BigCloud.png");
@@ -723,7 +724,7 @@ int main()
         if (isJumping)
         {
             DrawTexturePro(
-                dinoIdleTexture,
+                dinoJump,
                 (Rectangle){0, 0, (float)dinoIdleTexture.width, (float)dinoIdleTexture.height},
                 (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
                 (Vector2){0, 0},
@@ -969,6 +970,7 @@ int main()
     UnloadTexture(cactusTallSnowTexture);
     UnloadTexture(cactusVeryTallSnowTexture);
     UnloadTexture(cactusFrostedTexture);
+    UnloadTexture(dinoJump);
 
     CloseWindow();
     return 0;
