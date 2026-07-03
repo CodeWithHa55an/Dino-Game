@@ -215,7 +215,7 @@ int main()
         // All drops have similar speed (more realistic)
         rain[i].speed = GetRandomValue(12, 18);
     }
-    float sunX = 550;
+    float sunX = 750;
     float moonX = 850;
     float sunY = 30;
     float moonY = 50;
@@ -509,7 +509,9 @@ int main()
             // ===== WEATHER & CELESTIAL PHASE LOGIC =====
             float dt = GetFrameTime();
             int cycleScore = score % 100;
-            if (cycleScore == 0)
+            if (score == 0)
+                cycleScore = 0;
+            else if (cycleScore == 0)
                 cycleScore = 100;
 
             // Determine weather phase based on user schedule:
@@ -645,7 +647,9 @@ int main()
 
         // ===== DRAWING =====
         int cycleScore = score % 100;
-        if (cycleScore == 0)
+        if (score == 0)
+            cycleScore = 0;
+        else if (cycleScore == 0)
             cycleScore = 100;
 
         bool glowAndStickPhase = (cycleScore >= 21 && cycleScore <= 40) || (cycleScore > 80);
