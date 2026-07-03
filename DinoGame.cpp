@@ -1,3 +1,5 @@
+
+
 #include "raylib.h"
 
 struct RainDrop
@@ -157,6 +159,13 @@ int main()
     // 2 = Cloudy (40–60)
     // 3 = Sunny Heat (60–80)
     bool isCrouching = false;
+    float cloudAlpha = 0.0f;
+
+    bool cloudEntering = false;
+    bool cloudLeaving = false;
+    float leftCloudOffset = -500.0f;
+    float rightCloudOffset = 800.0f;
+    float cloudFade = 0.0f;
 
     auto ChooseCactusType = [&](int score)
     {
@@ -238,8 +247,6 @@ int main()
     int weatherTransitionFromPhase = 0;
     int weatherTransitionToPhase = 0;
     float weatherTransitionDuration = 1.2f;
-    bool initialFadeStarted = false;
-    float initialFadeProgress = 0.0f;
 
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
@@ -365,6 +372,7 @@ int main()
                     birdAnimationCounter = 0;
                 }
             }
+
             if (summerPhase == 3 || summerPhase == 4) // Rain phases
             {
                 for (int i = 0; i < rainCount; i++)
@@ -548,22 +556,28 @@ int main()
                 weatherPhase = 4; // Rain Night
             else
                 weatherPhase = 5; // Night
+                                  // Cloud Enter Animation
+            if (cycleScore == 78)
+            {
+                cloudEntering = true;
+                cloudLeaving = false;
+            }
+
+            // Cloud Leave Animation
+            if (cycleScore == 88)
+            {
+                cloudLeaving = true;
+                cloudEntering = false;
+            }
 
             // Update summerPhase for drawing
             summerPhase = weatherPhase;
 
-            if (!initialFadeStarted && gameStarted)
-            {
-                initialFadeStarted = true;
-                weatherTransitionActive = true;
-                weatherTransitionProgress = 0.0f;
-                weatherTransitionFromPhase = 0;
-                weatherTransitionToPhase = weatherPhase;
-            }
-            else if ((score == 21 && lastWeatherPhase == 0) ||
-                     (score == 41 && lastWeatherPhase == 1) ||
-                     (score == 81 && lastWeatherPhase == 3) ||
-                     (score == 91 && lastWeatherPhase == 4))
+            if ((score == 21 && lastWeatherPhase == 0) ||
+                (score == 41 && lastWeatherPhase == 1) ||
+                (score == 81 && lastWeatherPhase == 3) ||
+                (score == 91 && lastWeatherPhase == 4) ||
+                (score == 101 && lastWeatherPhase == 5))
             {
                 weatherTransitionActive = true;
                 weatherTransitionProgress = 0.0f;
@@ -589,14 +603,10 @@ int main()
                 celestialPhase = 1; // Sun 0-20
             else if (cycleScore <= 40)
                 celestialPhase = 2; // Moon 21-40
-            else if (cycleScore <= 60)
-                celestialPhase = 3; // Sun 41-60
             else if (cycleScore <= 80)
-                celestialPhase = 4; // Sun 61-80
-            else if (cycleScore <= 90)
-                celestialPhase = 5; // Moon 81-90
+                celestialPhase = 3; // Sun 41-80 (merged, continuous motion)
             else
-                celestialPhase = 6; // Moon 91-100
+                celestialPhase = 4; // Moon 81-100
 
             // Reset progress on phase transition
             if (celestialPhase != lastCyclePhase)
@@ -606,58 +616,49 @@ int main()
                 moonMoveProgress = 0.0f;
                 // Set starting positions
                 if (celestialPhase == 1)
-                    sunX = 750; // Sun starts at original position for 0-20
+                    sunX = 750; // Sun starts at 750 for 0-20
                 else if (celestialPhase == 2)
                     moonX = 850;
-                else if (celestialPhase == 3 || celestialPhase == 4)
-                    sunX = 750;
-                else if (celestialPhase == 5 || celestialPhase == 6)
-                    moonX = 750;
+                else if (celestialPhase == 3)
+                    sunX = 750; // Sun starts at 750 for 41-80 (merged)
+                else if (celestialPhase == 4)
+                    moonX = 850;
             }
 
-            // Phase durations: faster movement - 40 sec for 20-score phases, 20 sec for 10-score phases
+            // Phase durations: 60pts for 20-score, 120pts for 40-score
             float phaseDuration = 60.0f;
 
-            if (celestialPhase == 2)                             // Moon 21-40
-                phaseDuration = 49.0f;                           // Your custom moon speed
-            else if (celestialPhase == 5 || celestialPhase == 6) // Moon 81-90, 91-100
-                phaseDuration = 22.0f;                           // Different speed for 10-score phases
+            if (celestialPhase == 2)  // Moon 21-40
+                phaseDuration = 49.0f;
+            else if (celestialPhase == 3)  // Sun 41-80 (40 points, merged)
+                phaseDuration = 100.0f;
+            else if (celestialPhase == 4)  // Moon 81-100
+                phaseDuration = 24.5f;
+
             // Animate celestial bodies
-            if (celestialPhase == 1) // Sun 0-20 (starts at 550)
+            if (celestialPhase == 1) // Sun 0-20
             {
                 float nextProgress = sunMoveProgress + dt / phaseDuration;
                 sunMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
-                sunX = 750 - sunMoveProgress * 830; // from 550 to -80
+                sunX = 750 - sunMoveProgress * 830; // from 750 to -80
             }
-            else if (celestialPhase == 2) // Moon 21-40 (starts at 850)
+            else if (celestialPhase == 2) // Moon 21-40
             {
                 float nextProgress = moonMoveProgress + dt / phaseDuration;
                 moonMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
                 moonX = 750 - moonMoveProgress * 930; // from 850 to -80
             }
-            else if (celestialPhase == 3) // Sun 41-60 (starts at 850)
+            else if (celestialPhase == 3) // Sun 41-80 (merged, continuous)
             {
                 float nextProgress = sunMoveProgress + dt / phaseDuration;
                 sunMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
-                sunX = 750 - sunMoveProgress * 930; // from 850 to -80
+                sunX = 750 - sunMoveProgress * 830; // from 750 to -80
             }
-            else if (celestialPhase == 4) // Sun 61-80 (starts at 850)
-            {
-                float nextProgress = sunMoveProgress + dt / phaseDuration;
-                sunMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
-                sunX = 750 - sunMoveProgress * 930; // from 850 to -80
-            }
-            else if (celestialPhase == 5) // Moon 81-90 (starts at 850)
+            else // celestialPhase == 4 // Moon 81-100
             {
                 float nextProgress = moonMoveProgress + dt / phaseDuration;
                 moonMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
                 moonX = 750 - moonMoveProgress * 930; // from 850 to -80
-            }
-            else // celestialPhase == 6 // Moon 91-100 (starts at 850)
-            {
-                float nextProgress = moonMoveProgress + dt / phaseDuration;
-                moonMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
-                moonX = 425 - moonMoveProgress * 930; // from 850 to -80
             }
         }
 
@@ -703,7 +704,47 @@ int main()
             cycleScore = 100;
 
         bool glowAndStickPhase = (cycleScore >= 21 && cycleScore <= 40) || (cycleScore > 80);
+        // ---------- Clouds Enter ----------
+        if (cloudEntering)
+        {
+            if (leftCloudOffset < 0)
+                leftCloudOffset += 6.0f;
 
+            if (rightCloudOffset > 250)
+                rightCloudOffset -= 6.0f;
+
+            if (cloudAlpha < 1.0f)
+                cloudAlpha += 0.02f;
+
+            if (leftCloudOffset >= 0 && rightCloudOffset <= 250)
+            {
+                leftCloudOffset = 0;
+                rightCloudOffset = 250;
+                cloudAlpha = 1.0f;
+                cloudEntering = false;
+            }
+        }
+
+        // ---------- Clouds Leave ----------
+        if (cloudLeaving)
+        {
+            if (leftCloudOffset > -500)
+                leftCloudOffset -= 6.0f;
+
+            if (rightCloudOffset < 800)
+                rightCloudOffset += 6.0f;
+
+            if (cloudAlpha > 0.0f)
+                cloudAlpha -= 0.02f;
+
+            if (leftCloudOffset <= -500 && rightCloudOffset >= 800)
+            {
+                leftCloudOffset = -500;
+                rightCloudOffset = 800;
+                cloudAlpha = 0.0f;
+                cloudLeaving = false;
+            }
+        }
         BeginDrawing();
         ClearBackground(WHITE);
         Color nightBG = (Color){20, 30, 60, 120};      // strong blue tint (background feel)
@@ -840,53 +881,97 @@ int main()
             DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
             DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
         }
-        // Rain clouds and rain - show during phases 3 (Day Rain) and 4 (Rain Night)
-        if (summerPhase == 3 || summerPhase == 4)
+        // ================= RAIN CLOUDS =================
+        if (summerPhase == 3 || summerPhase == 4 || cloudEntering || cloudLeaving)
         {
-            // Top row
-            for (int x = -40; x < screenWidth + 200; x += 180)
+            // ================= TOP ROW =================
+
+            // Left Half
+            for (int x = -40; x < 400; x += 250)
             {
                 DrawTextureEx(
                     rainycloud,
-                    (Vector2){(float)x, -70},
+                    (Vector2){leftCloudOffset + x, -60},
                     0.0f,
                     0.45f,
-                    WHITE);
+                    Fade(WHITE, cloudAlpha));
             }
 
-            // Middle row
-            for (int x = -150; x < screenWidth + 200; x += 180)
+            // Right Half
+            for (int x = 220; x < screenWidth + 200; x += 250)
             {
                 DrawTextureEx(
                     rainycloud,
-                    (Vector2){(float)x, -30},
+                    (Vector2){rightCloudOffset + x, -60},
                     0.0f,
                     0.45f,
-                    Fade(WHITE, 0.9f));
+                    Fade(WHITE, cloudAlpha));
             }
 
-            // Bottom row
-            for (int x = -50; x < screenWidth + 200; x += 180)
+            // ================= MIDDLE ROW =================
+
+            // Left Half
+            for (int x = -150; x < 400; x += 250)
             {
                 DrawTextureEx(
                     rainycloud,
-                    (Vector2){(float)x, 15},
+                    (Vector2){leftCloudOffset + x, -15},
+                    0.0f,
+                    0.45f,
+                    Fade(WHITE, cloudAlpha * 0.9f));
+            }
+
+            // Right Half
+            for (int x = 110; x < screenWidth + 200; x += 250)
+            {
+                DrawTextureEx(
+                    rainycloud,
+                    (Vector2){rightCloudOffset + x, -15},
+                    0.0f,
+                    0.45f,
+                    Fade(WHITE, cloudAlpha * 0.9f));
+            }
+
+            // ================= BOTTOM ROW =================
+
+            // Left Half
+            for (int x = -50; x < 400; x += 250)
+            {
+                DrawTextureEx(
+                    rainycloud,
+                    (Vector2){leftCloudOffset + x, 30},
                     0.0f,
                     0.40f,
-                    Fade(WHITE, 0.85f));
+                    Fade(WHITE, cloudAlpha * 0.85f));
             }
-            // Drawing Rain
-            for (int i = 0; i < rainCount; i++)
-            {
-                Color rainColor = (summerPhase == 4)
-                                      ? (Color){220, 235, 255, 100} // Bright rain at night
-                                      : (Color){90, 170, 255, 100}; // Blue rain during day
 
-                DrawLineEx(
-                    (Vector2){rain[i].x, rain[i].y},
-                    (Vector2){rain[i].x - 3, rain[i].y + 12},
-                    1.6f,
-                    Fade(rainColor, 0.65f));
+            // Right Half
+           for (int x = 210; x < screenWidth + 200; x += 250)
+            {
+                DrawTextureEx(
+                    rainycloud,
+                    (Vector2){rightCloudOffset + x, 30},
+                    0.0f,
+                    0.40f,
+                    Fade(WHITE, cloudAlpha * 0.85f));
+            }
+
+            // ================= RAIN =================
+
+            if (!cloudEntering && !cloudLeaving && cloudAlpha >= 1.0f)
+            {
+                for (int i = 0; i < rainCount; i++)
+                {
+                    Color rainColor = (summerPhase == 4)
+                                          ? (Color){220, 235, 255, 180}
+                                          : (Color){90, 170, 255, 150};
+
+                    DrawLineEx(
+                        (Vector2){rain[i].x, rain[i].y},
+                        (Vector2){rain[i].x - 2, rain[i].y + 10},
+                        1.5f,
+                        rainColor);
+                }
             }
         }
         // ===== DRAW DINO =====
