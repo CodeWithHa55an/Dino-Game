@@ -146,7 +146,6 @@ int main()
     // ==================== DAY / NIGHT ====================
     bool isNight = false;
     int nextDayNightScore = 5; // Change every 20 points
-
     int selectedEnvironment = 0;
     // 0 = not selected
     // 1 = Summer
@@ -222,6 +221,26 @@ int main()
     float sunMoveProgress = 0.0f;
     float moonMoveProgress = 0.0f;
     int lastCyclePhase = 0;
+
+    auto LerpColor = [](Color a, Color b, float t) -> Color
+    {
+        t = (t < 0.0f) ? 0.0f : ((t > 1.0f) ? 1.0f : t);
+        return (Color){
+            (unsigned char)(a.r + (b.r - a.r) * t),
+            (unsigned char)(a.g + (b.g - a.g) * t),
+            (unsigned char)(a.b + (b.b - a.b) * t),
+            (unsigned char)(a.a + (b.a - a.a) * t)};
+    };
+
+    int lastWeatherPhase = 0;
+    bool weatherTransitionActive = false;
+    float weatherTransitionProgress = 1.0f;
+    int weatherTransitionFromPhase = 0;
+    int weatherTransitionToPhase = 0;
+    float weatherTransitionDuration = 1.2f;
+    bool initialFadeStarted = false;
+    float initialFadeProgress = 0.0f;
+
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
     {
@@ -533,6 +552,37 @@ int main()
             // Update summerPhase for drawing
             summerPhase = weatherPhase;
 
+            if (!initialFadeStarted && gameStarted)
+            {
+                initialFadeStarted = true;
+                weatherTransitionActive = true;
+                weatherTransitionProgress = 0.0f;
+                weatherTransitionFromPhase = 0;
+                weatherTransitionToPhase = weatherPhase;
+            }
+            else if ((score == 21 && lastWeatherPhase == 0) ||
+                     (score == 41 && lastWeatherPhase == 1) ||
+                     (score == 81 && lastWeatherPhase == 3) ||
+                     (score == 91 && lastWeatherPhase == 4))
+            {
+                weatherTransitionActive = true;
+                weatherTransitionProgress = 0.0f;
+                weatherTransitionFromPhase = lastWeatherPhase;
+                weatherTransitionToPhase = weatherPhase;
+            }
+
+            if (weatherTransitionActive)
+            {
+                weatherTransitionProgress += dt / weatherTransitionDuration;
+                if (weatherTransitionProgress >= 1.0f)
+                {
+                    weatherTransitionProgress = 1.0f;
+                    weatherTransitionActive = false;
+                }
+            }
+
+            lastWeatherPhase = weatherPhase;
+
             // Determine celestial phase (which body moves)
             int celestialPhase;
             if (cycleScore <= 20)
@@ -566,7 +616,7 @@ int main()
             }
 
             // Phase durations: faster movement - 40 sec for 20-score phases, 20 sec for 10-score phases
-            float phaseDuration = 57.0f;
+            float phaseDuration = 60.0f;
 
             if (celestialPhase == 2)                             // Moon 21-40
                 phaseDuration = 49.0f;                           // Your custom moon speed
@@ -662,14 +712,25 @@ int main()
         if (selectedEnvironment == 1)
         {
             // BACKGROUND tint system based on weather phase
-            Color skyTint = WHITE;
+            Color daySkyTint = WHITE;
+            Color nightSkyTint = (Color){60, 60, 100, 255};
+            Color skyTint = daySkyTint;
 
-            if (summerPhase == 1 || summerPhase == 4 || summerPhase == 5)
+            if (weatherTransitionActive)
+            {
+                Color fromSky = (weatherTransitionFromPhase == 1 || weatherTransitionFromPhase == 4 || weatherTransitionFromPhase == 5)
+                                    ? nightSkyTint
+                                    : daySkyTint;
+                Color toSky = (weatherTransitionToPhase == 1 || weatherTransitionToPhase == 4 || weatherTransitionToPhase == 5)
+                                  ? nightSkyTint
+                                  : daySkyTint;
+                skyTint = LerpColor(fromSky, toSky, weatherTransitionProgress);
+            }
+            else if (summerPhase == 1 || summerPhase == 4 || summerPhase == 5)
             {
                 // Night phases: 21-40 (phase 1), 81-90 (phase 4), 91-100 (phase 5)
-                skyTint = (Color){60, 60, 100, 255}; // Dark blue
+                skyTint = nightSkyTint; // Dark blue
             }
-            // else skyTint = WHITE for day phases (0, 2, 3)
 
             DrawTexturePro(
                 desertBG,
@@ -722,12 +783,24 @@ int main()
         // ===== DRAW GROUND =====
         if (selectedEnvironment == 1)
         {
-            Color groundTint = WHITE;
+            Color dayGroundTint = WHITE;
+            Color nightGroundTint = (Color){100, 110, 140, 255};
+            Color groundTint = dayGroundTint;
 
-            if (summerPhase == 1 || summerPhase == 4 || summerPhase == 5)
+            if (weatherTransitionActive)
+            {
+                Color fromGround = (weatherTransitionFromPhase == 1 || weatherTransitionFromPhase == 4 || weatherTransitionFromPhase == 5)
+                                       ? nightGroundTint
+                                       : dayGroundTint;
+                Color toGround = (weatherTransitionToPhase == 1 || weatherTransitionToPhase == 4 || weatherTransitionToPhase == 5)
+                                     ? nightGroundTint
+                                     : dayGroundTint;
+                groundTint = LerpColor(fromGround, toGround, weatherTransitionProgress);
+            }
+            else if (summerPhase == 1 || summerPhase == 4 || summerPhase == 5)
             {
                 // Night phases: dark tint
-                groundTint = (Color){100, 110, 140, 255};
+                groundTint = nightGroundTint;
             }
 
             DrawTexturePro(
