@@ -565,11 +565,11 @@ int main()
 
             // Phase durations: faster movement - 40 sec for 20-score phases, 20 sec for 10-score phases
             float phaseDuration = 57.0f;
-           
-if (celestialPhase == 2)  // Moon 21-40
-    phaseDuration = 49.0f;  // Your custom moon speed
-else if (celestialPhase == 5 || celestialPhase == 6)  // Moon 81-90, 91-100
-    phaseDuration = 22.0f;  // Different speed for 10-score phases
+
+            if (celestialPhase == 2)                             // Moon 21-40
+                phaseDuration = 49.0f;                           // Your custom moon speed
+            else if (celestialPhase == 5 || celestialPhase == 6) // Moon 81-90, 91-100
+                phaseDuration = 22.0f;                           // Different speed for 10-score phases
             // Animate celestial bodies
             if (celestialPhase == 1) // Sun 0-20 (starts at 550)
             {
@@ -692,7 +692,10 @@ else if (celestialPhase == 5 || celestialPhase == 6)  // Moon 81-90, 91-100
             }
             else
             {
-                // MOON visible: 21-40, 81-100
+                // Moon Glow
+                DrawCircle(moonX + 35, 85, 70, Fade((Color){150, 200, 255, 255}, 0.05f));
+                DrawCircle(moonX + 35, 85, 55, Fade((Color){200, 225, 255, 255}, 0.08f));
+                DrawCircle(moonX + 35, 85, 40, Fade((Color){235, 245, 255, 255}, 0.12f));
                 DrawTexturePro(
                     moonSummer,
                     (Rectangle){0, 0, (float)moonSummer.width, (float)moonSummer.height},
