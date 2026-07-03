@@ -137,7 +137,7 @@ int main()
     bool gameOver = false;
     int score = 0;
     int highscore = 0;
-    int nextBirdSpawnScore = 50;
+    int nextBirdSpawnScore = 9999;
     bool birdSpawnedAtThisScore = false;
     // Rain
     const int rainCount = 80;
@@ -215,6 +215,13 @@ int main()
         // All drops have similar speed (more realistic)
         rain[i].speed = GetRandomValue(12, 18);
     }
+    float sunX = 550;
+    float moonX = 850;
+    float sunY = 30;
+    float moonY = 50;
+    float sunMoveProgress = 0.0f;
+    float moonMoveProgress = 0.0f;
+    int lastCyclePhase = 0;
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
     {
@@ -339,7 +346,7 @@ int main()
                     birdAnimationCounter = 0;
                 }
             }
-            if (summerPhase == 2 || summerPhase == 3)
+            if (summerPhase == 3 || summerPhase == 4) // Rain phases
             {
                 for (int i = 0; i < rainCount; i++)
                 {
@@ -435,7 +442,7 @@ int main()
             {
                 if (cactusX > 600)
                 {
-                    birdActive = true;
+                    birdActive = false;
                     birdX = 800;
                     birdY = 220;
                     birdAnimationType = 0;
@@ -446,7 +453,7 @@ int main()
 
             if (score > nextBirdSpawnScore && birdSpawnedAtThisScore && !birdActive)
             {
-                nextBirdSpawnScore += 10;
+                nextBirdSpawnScore += 9999;
                 birdSpawnedAtThisScore = false;
             }
 
@@ -481,34 +488,128 @@ int main()
                 gameOver = true;
                 dinoSpeed = 0;
             }
-            int cycleScore = score % 101;
 
+            // ===== CLOUD MOVEMENT =====
+            if (selectedEnvironment == 1)
+            {
+                if (summerPhase == 3 || summerPhase == 4) // Rain phases only
+                {
+                    cloud1X -= 1;
+                    cloud2X -= 1;
+                    cloud3X -= 1;
+                }
+            }
+            else if (selectedEnvironment == 2)
+            {
+                // Winter: gentle constant cloud drift
+                cloud1X -= 1;
+                cloud2X -= 1;
+                cloud3X -= 1;
+            }
+            // ===== WEATHER & CELESTIAL PHASE LOGIC =====
+            float dt = GetFrameTime();
+            int cycleScore = score % 100;
+            if (cycleScore == 0)
+                cycleScore = 100;
+
+            // Determine weather phase based on user schedule:
+            // 0-20: Day, 21-40: Night, 41-60: Day, 61-80: Day Rain, 81-90: Rain Night, 91-100: Night
+            int weatherPhase;
             if (cycleScore <= 20)
-            {
-                summerPhase = 0; // Sunny Day (0-2)
-            }
+                weatherPhase = 0; // Day
             else if (cycleScore <= 40)
-            {
-                summerPhase = 1; // Night (3-5)
-            }
+                weatherPhase = 1; // Night
             else if (cycleScore <= 60)
-            {
-                summerPhase = 0; // Sunny Day (6-7)
-            }
+                weatherPhase = 2; // Day
             else if (cycleScore <= 80)
-            {
-                summerPhase = 2; // Rain + Day (8-11)
-            }
+                weatherPhase = 3; // Day Rain
             else if (cycleScore <= 90)
-            {
-                summerPhase = 3; // Rain + Night (12-17)
-            }
+                weatherPhase = 4; // Rain Night
             else
+                weatherPhase = 5; // Night
+
+            // Update summerPhase for drawing
+            summerPhase = weatherPhase;
+
+            // Determine celestial phase (which body moves)
+            int celestialPhase;
+            if (cycleScore <= 20)
+                celestialPhase = 1; // Sun 0-20
+            else if (cycleScore <= 40)
+                celestialPhase = 2; // Moon 21-40
+            else if (cycleScore <= 60)
+                celestialPhase = 3; // Sun 41-60
+            else if (cycleScore <= 80)
+                celestialPhase = 4; // Sun 61-80
+            else if (cycleScore <= 90)
+                celestialPhase = 5; // Moon 81-90
+            else
+                celestialPhase = 6; // Moon 91-100
+
+            // Reset progress on phase transition
+            if (celestialPhase != lastCyclePhase)
             {
-                summerPhase = 1; // Night only (18-24)
+                lastCyclePhase = celestialPhase;
+                sunMoveProgress = 0.0f;
+                moonMoveProgress = 0.0f;
+                // Set starting positions
+                if (celestialPhase == 1)
+                    sunX = 750; // Sun starts at original position for 0-20
+                else if (celestialPhase == 2)
+                    moonX = 850;
+                else if (celestialPhase == 3 || celestialPhase == 4)
+                    sunX = 750;
+                else if (celestialPhase == 5 || celestialPhase == 6)
+                    moonX = 750;
+            }
+
+            // Phase durations: faster movement - 40 sec for 20-score phases, 20 sec for 10-score phases
+            float phaseDuration = 57.0f;
+           
+if (celestialPhase == 2)  // Moon 21-40
+    phaseDuration = 49.0f;  // Your custom moon speed
+else if (celestialPhase == 5 || celestialPhase == 6)  // Moon 81-90, 91-100
+    phaseDuration = 22.0f;  // Different speed for 10-score phases
+            // Animate celestial bodies
+            if (celestialPhase == 1) // Sun 0-20 (starts at 550)
+            {
+                float nextProgress = sunMoveProgress + dt / phaseDuration;
+                sunMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
+                sunX = 750 - sunMoveProgress * 830; // from 550 to -80
+            }
+            else if (celestialPhase == 2) // Moon 21-40 (starts at 850)
+            {
+                float nextProgress = moonMoveProgress + dt / phaseDuration;
+                moonMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
+                moonX = 750 - moonMoveProgress * 930; // from 850 to -80
+            }
+            else if (celestialPhase == 3) // Sun 41-60 (starts at 850)
+            {
+                float nextProgress = sunMoveProgress + dt / phaseDuration;
+                sunMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
+                sunX = 750 - sunMoveProgress * 930; // from 850 to -80
+            }
+            else if (celestialPhase == 4) // Sun 61-80 (starts at 850)
+            {
+                float nextProgress = sunMoveProgress + dt / phaseDuration;
+                sunMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
+                sunX = 750 - sunMoveProgress * 930; // from 850 to -80
+            }
+            else if (celestialPhase == 5) // Moon 81-90 (starts at 850)
+            {
+                float nextProgress = moonMoveProgress + dt / phaseDuration;
+                moonMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
+                moonX = 750 - moonMoveProgress * 930; // from 850 to -80
+            }
+            else // celestialPhase == 6 // Moon 91-100 (starts at 850)
+            {
+                float nextProgress = moonMoveProgress + dt / phaseDuration;
+                moonMoveProgress = (nextProgress < 1.0f) ? nextProgress : 1.0f;
+                moonX = 425 - moonMoveProgress * 930; // from 850 to -80
             }
         }
-        // ===== RESTART LOGIC =====
+
+        // ===== RESTART LOGIC (outside game update) =====
         if (IsKeyPressed(KEY_R) && gameOver)
         {
             gameOver = false;
@@ -534,33 +635,21 @@ int main()
             cloud1Y = GetRandomValue(40, 150);
             cloud2Y = GetRandomValue(40, 150);
             cloud3Y = GetRandomValue(40, 150);
+            sunMoveProgress = 0.0f;
+            moonMoveProgress = 0.0f;
+            lastCyclePhase = 0;
+            sunX = 850;
+            moonX = 850;
             gameStarted = true;
         }
 
-        // ===== CLOUD MOVEMENT =====
-        if (selectedEnvironment == 1)
-        {
-            if (summerPhase == 2) // Cloudy
-            {
-                cloud1X -= 1;
-                cloud2X -= 1;
-                cloud3X -= 1;
-            }
-            else if (summerPhase == 3) // Hot wind
-            {
-                cloud1X -= 2;
-                cloud2X -= 2;
-                cloud3X -= 2;
-            }
-        }
-        else if (selectedEnvironment == 2)
-        {
-            // Winter: gentle constant cloud drift
-            cloud1X -= 1;
-            cloud2X -= 1;
-            cloud3X -= 1;
-        }
         // ===== DRAWING =====
+        int cycleScore = score % 100;
+        if (cycleScore == 0)
+            cycleScore = 100;
+
+        bool glowAndStickPhase = (cycleScore >= 21 && cycleScore <= 40) || (cycleScore > 80);
+
         BeginDrawing();
         ClearBackground(WHITE);
         Color nightBG = (Color){20, 30, 60, 120};      // strong blue tint (background feel)
@@ -568,21 +657,15 @@ int main()
         // ==================== DRAW ENVIRONMENT ====================
         if (selectedEnvironment == 1)
         {
-            // BACKGROUND tint system
+            // BACKGROUND tint system based on weather phase
             Color skyTint = WHITE;
 
-            if (summerPhase == 1)
+            if (summerPhase == 1 || summerPhase == 4 || summerPhase == 5)
             {
-                skyTint = (Color){60, 60, 100, 255}; // Night
+                // Night phases: 21-40 (phase 1), 81-90 (phase 4), 91-100 (phase 5)
+                skyTint = (Color){60, 60, 100, 255}; // Dark blue
             }
-            else if (summerPhase == 2)
-            {
-                skyTint = WHITE; // Rain during Day
-            }
-            else if (summerPhase == 3)
-            {
-                skyTint = (Color){60, 60, 100, 255}; // Rain during Night
-            }
+            // else skyTint = WHITE for day phases (0, 2, 3)
 
             DrawTexturePro(
                 desertBG,
@@ -592,36 +675,32 @@ int main()
                 0,
                 skyTint);
 
-            // 🌞 SUN / 🌙 MOON SWITCH
-            if (summerPhase == 1 || summerPhase == 3)
+            // 🌞 SUN / 🌙 MOON SWITCH - draw celestial body based on phase
+            if (cycleScore <= 20 || (cycleScore > 40 && cycleScore <= 80))
             {
-                // MOON
+                // SUN visible: 0-20, 41-60, 61-80
+                DrawCircle(sunX + 40, 70, 70, Fade(YELLOW, 0.08f));
+                DrawCircle(sunX + 40, sunY + 40, 55, Fade(ORANGE, 0.12f));
+                DrawCircle(sunX + 40, sunY + 40, 40, Fade(YELLOW, 0.18f));
                 DrawTexturePro(
-                    moonSummer,
-                    (Rectangle){0, 0, (float)moonSummer.width, (float)moonSummer.height},
-                    (Rectangle){650, 50, 70, 70},
+                    sunTexture,
+                    (Rectangle){0, 0, (float)sunTexture.width, (float)sunTexture.height},
+                    (Rectangle){sunX, 30, 80, 80},
                     (Vector2){0, 0},
                     0,
                     WHITE);
             }
             else
             {
-                // Glow Of Sun
-                DrawCircle(590, 70, 70, Fade(YELLOW, 0.08f));
-                DrawCircle(590, 70, 55, Fade(ORANGE, 0.12f));
-                DrawCircle(590, 70, 40, Fade(YELLOW, 0.18f));
-                // SUN
+                // MOON visible: 21-40, 81-100
                 DrawTexturePro(
-                    sunTexture,
-                    (Rectangle){0, 0, (float)sunTexture.width, (float)sunTexture.height},
-                    (Rectangle){550, 30, 80, 80},
+                    moonSummer,
+                    (Rectangle){0, 0, (float)moonSummer.width, (float)moonSummer.height},
+                    (Rectangle){moonX, 50, 70, 70},
                     (Vector2){0, 0},
                     0,
                     WHITE);
             }
-            // summerPhase == 2
-            // Draw neither Sun nor Moon.
-            // Clouds will cover the sky.
         }
         else if (selectedEnvironment == 2)
         {
@@ -638,9 +717,9 @@ int main()
         {
             Color groundTint = WHITE;
 
-            if (summerPhase == 1 || summerPhase == 3)
+            if (summerPhase == 1 || summerPhase == 4 || summerPhase == 5)
             {
-                // slightly dark blue
+                // Night phases: dark tint
                 groundTint = (Color){100, 110, 140, 255};
             }
 
@@ -681,8 +760,8 @@ int main()
             DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
             DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
         }
-        // Rain clouds
-        if (summerPhase == 2 || summerPhase == 3)
+        // Rain clouds and rain - show during phases 3 (Day Rain) and 4 (Rain Night)
+        if (summerPhase == 3 || summerPhase == 4)
         {
             // Top row
             for (int x = -40; x < screenWidth + 200; x += 180)
@@ -719,7 +798,7 @@ int main()
             // Drawing Rain
             for (int i = 0; i < rainCount; i++)
             {
-                Color rainColor = (summerPhase == 3)
+                Color rainColor = (summerPhase == 4)
                                       ? (Color){220, 235, 255, 100} // Bright rain at night
                                       : (Color){90, 170, 255, 100}; // Blue rain during day
 
@@ -784,7 +863,7 @@ int main()
                 0.0f,
                 WHITE);
         }
-        if (summerPhase == 1 || summerPhase == 3)
+        if (glowAndStickPhase)
         {
             // torch stick
             DrawRectangle(
@@ -807,7 +886,7 @@ int main()
                 2,
                 YELLOW);
         }
-        if (summerPhase == 1 || summerPhase == 3)
+        if (glowAndStickPhase)
         {
             DrawCircle(
                 dinoX + 33,
@@ -829,7 +908,7 @@ int main()
         }
         // ===== DRAW CACTUS 1 =====
         Texture2D cactus1Texture = GetCactusTextureForType(cactusType, selectedEnvironment == 2);
-        if (summerPhase == 1 || summerPhase == 3)
+        if (glowAndStickPhase)
         {
             // Soft green glow (behind cactus)
             DrawCircle(
@@ -851,13 +930,12 @@ int main()
             (Rectangle){(float)cactusX, (float)cactusY, (float)cactusWidth, (float)cactusHeight},
             (Vector2){0, 0},
             0,
-            (summerPhase == 1) ? (Color){180, 255, 180, 255}
-                               : WHITE);
+            glowAndStickPhase ? (Color){180, 255, 180, 255} : WHITE);
 
         if (secondCactusActive)
         {
             Texture2D cactus2TextureToDraw = GetCactusTextureForType(cactus2Type, selectedEnvironment == 2);
-            if (summerPhase == 1 || summerPhase == 3)
+            if (glowAndStickPhase)
             {
                 DrawCircle(
                     cactus2X + cactus2Width / 2,
@@ -877,11 +955,11 @@ int main()
                 (Rectangle){(float)cactus2X, (float)cactus2Y, (float)cactus2Width, (float)cactus2Height},
                 (Vector2){0, 0},
                 0.0f,
-                (summerPhase == 1) ? (Color){180, 255, 180, 255} : WHITE);
+                glowAndStickPhase ? (Color){180, 255, 180, 255} : WHITE);
         }
 
         // ===== DRAW BIRD (Using textures with scaling) =====
-        if (birdActive && summerPhase == 1 || summerPhase == 3)
+        if (birdActive && glowAndStickPhase)
         {
             DrawCircle(
                 birdX + 20,
@@ -899,8 +977,7 @@ int main()
                     (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
                     (Vector2){0, 0},
                     0.0f,
-                    (summerPhase == 1) ? (Color){190, 210, 255, 255}
-                                       : WHITE);
+                    glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
             }
             else if (birdAnimationType == 1)
             {
@@ -910,8 +987,7 @@ int main()
                     (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
                     (Vector2){0, 0},
                     0.0f,
-                    (summerPhase == 1) ? (Color){190, 210, 255, 255}
-                                       : WHITE);
+                    glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
             }
             else
             {
@@ -921,8 +997,7 @@ int main()
                     (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
                     (Vector2){0, 0},
                     0.0f,
-                    (summerPhase == 1) ? (Color){190, 210, 255, 255}
-                                       : WHITE);
+                    glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
             }
         }
 
