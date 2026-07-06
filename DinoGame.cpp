@@ -422,34 +422,29 @@ int main()
                 else
                     spawnChance = 60;
 
-                secondCactusActive = (GetRandomValue(1, 100) <= spawnChance);
-                if (secondCactusActive)
+                // Spawn cactus 2 only if there isn't already one on screen
+                if (!secondCactusActive)
                 {
-                    cactus2Type = ChooseCactusType(score);
-                    SetCactusSize(cactus2Type, cactus2Width, cactus2Height);
-                    cactus2Y = 360 - cactus2Height;
-                    int gap = GetRandomValue(0, 40);
-                    cactus2X = cactusX + cactusWidth + gap;
-                }
-                else
-                {
-                    cactus2X = 1400;
+                    secondCactusActive = (GetRandomValue(1, 100) <= spawnChance);
+
+                    if (secondCactusActive)
+                    {
+                        cactus2Type = ChooseCactusType(score);
+                        SetCactusSize(cactus2Type, cactus2Width, cactus2Height);
+                        cactus2Y = 360 - cactus2Height;
+
+                        int gap = GetRandomValue(0, 40);
+
+                        cactus2X = cactusX + cactusWidth + gap;
+                    }
                 }
             }
 
             // ===== CACTUS 2 RESET =====
             if (secondCactusActive && cactus2X < -cactus2Width)
             {
-                cactus2X = 900 + GetRandomValue(100, 220);
-                cactus2Type = ChooseCactusType(score);
-                SetCactusSize(cactus2Type, cactus2Width, cactus2Height);
-                cactus2Y = 360 - cactus2Height;
-                score = score + 1;
-
-                if (score > highscore)
-                {
-                    highscore = score;
-                }
+                secondCactusActive = false;
+                cactus2X = 1400;
             }
 
             // ===== BIRD RESET =====
@@ -559,11 +554,11 @@ int main()
                                   // Cloud Enter Animation
             static bool cloudsEnteredThisCycle = false;
             if (cycleScore == 59 && !cloudsEnteredThisCycle)
-{
-    cloudEntering = true;
-    cloudLeaving = false;
-    cloudsEnteredThisCycle = true;
-}
+            {
+                cloudEntering = true;
+                cloudLeaving = false;
+                cloudsEnteredThisCycle = true;
+            }
 
             if (cycleScore <= 20)
             {
