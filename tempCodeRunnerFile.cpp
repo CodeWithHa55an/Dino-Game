@@ -557,32 +557,17 @@ int main()
             else
                 weatherPhase = 5; // Night
                                   // Cloud Enter Animation
-            static bool cloudsEnteredThisCycle = false;
-            if (cycleScore == 59 && !cloudsEnteredThisCycle)
-{
-    cloudEntering = true;
-    cloudLeaving = false;
-    cloudsEnteredThisCycle = true;
-}
-
-            if (cycleScore <= 20)
+            if (cycleScore == 78)
             {
-                cloudsEnteredThisCycle = false;
+                cloudEntering = true;
+                cloudLeaving = false;
             }
 
             // Cloud Leave Animation
-            static bool cloudsLeftThisCycle = false;
-
-            if (cycleScore >= 88 && cycleScore <= 89 && !cloudsLeftThisCycle)
+            if (cycleScore == 88)
             {
                 cloudLeaving = true;
                 cloudEntering = false;
-                cloudsLeftThisCycle = true;
-            }
-
-            if (cycleScore <= 20)
-            {
-                cloudsLeftThisCycle = false;
             }
 
             // Update summerPhase for drawing
@@ -643,12 +628,12 @@ int main()
             // Phase durations: 60pts for 20-score, 120pts for 40-score
             float phaseDuration = 60.0f;
 
-            if (celestialPhase == 2) // Moon 21-40
+            if (celestialPhase == 2)  // Moon 21-40
                 phaseDuration = 49.0f;
-            else if (celestialPhase == 3) // Sun 41-80 (40 points, merged)
+            else if (celestialPhase == 3)  // Sun 41-80 (40 points, merged)
                 phaseDuration = 100.0f;
-            else if (celestialPhase == 4) // Moon 81-100
-                phaseDuration = 28.0f;
+            else if (celestialPhase == 4)  // Moon 81-100
+                phaseDuration = 24.5f;
 
             // Animate celestial bodies
             if (celestialPhase == 1) // Sun 0-20
@@ -897,9 +882,7 @@ int main()
             DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
         }
         // ================= RAIN CLOUDS =================
-        if ((cycleScore >= 59 && cycleScore <= 90) ||
-            cloudEntering ||
-            cloudLeaving)
+        if (summerPhase == 3 || summerPhase == 4 || cloudEntering || cloudLeaving)
         {
             // ================= TOP ROW =================
 
@@ -963,7 +946,7 @@ int main()
             }
 
             // Right Half
-            for (int x = 210; x < screenWidth + 200; x += 250)
+           for (int x = 210; x < screenWidth + 200; x += 250)
             {
                 DrawTextureEx(
                     rainycloud,
@@ -975,11 +958,7 @@ int main()
 
             // ================= RAIN =================
 
-            if (!cloudEntering &&
-                !cloudLeaving &&
-                cloudAlpha >= 1.0f &&
-                cycleScore >= 61 &&
-                cycleScore <= 87)
+            if (!cloudEntering && !cloudLeaving && cloudAlpha >= 1.0f)
             {
                 for (int i = 0; i < rainCount; i++)
                 {
