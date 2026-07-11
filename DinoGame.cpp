@@ -547,7 +547,7 @@ int main()
                 weatherPhase = 2; // Day
             else if (cycleScore <= 80)
                 weatherPhase = 3; // Day Rain
-            else if (cycleScore <= 90)
+            else if (cycleScore <= 88)
                 weatherPhase = 4; // Rain Night
             else
                 weatherPhase = 5; // Night
@@ -583,11 +583,9 @@ int main()
             // Update summerPhase for drawing
             summerPhase = weatherPhase;
 
-            if ((score == 21 && lastWeatherPhase == 0) ||
-                (score == 41 && lastWeatherPhase == 1) ||
-                (score == 81 && lastWeatherPhase == 3) ||
-                (score == 91 && lastWeatherPhase == 4) ||
-                (score == 101 && lastWeatherPhase == 5))
+            // ===== WEATHER TRANSITION DETECTION =====
+            // Trigger transition whenever weather phase changes
+            if (weatherPhase != lastWeatherPhase)
             {
                 weatherTransitionActive = true;
                 weatherTransitionProgress = 0.0f;
@@ -595,6 +593,10 @@ int main()
                 weatherTransitionToPhase = weatherPhase;
             }
 
+            // Update lastWeatherPhase at end of game update
+            lastWeatherPhase = weatherPhase;
+
+            // ===== WEATHER TRANSITION ANIMATION =====
             if (weatherTransitionActive)
             {
                 weatherTransitionProgress += dt / weatherTransitionDuration;
@@ -604,8 +606,6 @@ int main()
                     weatherTransitionActive = false;
                 }
             }
-
-            lastWeatherPhase = weatherPhase;
 
             // Determine celestial phase (which body moves)
             int celestialPhase;
@@ -764,24 +764,31 @@ int main()
         {
             // BACKGROUND tint system based on weather phase
             Color daySkyTint = WHITE;
+            Color cloudySkyTint = (Color){185, 190, 200, 255}; // Light gray-blue
             Color nightSkyTint = (Color){60, 60, 100, 255};
+
+            auto GetTargetSkyTint = [&](int phase) -> Color {
+                if (phase == 0) return daySkyTint;
+                if (phase == 1) return nightSkyTint;
+                if (phase == 2) return LerpColor(daySkyTint, cloudySkyTint, cloudAlpha);
+                if (phase == 3) return cloudySkyTint;
+                if (phase == 4 || phase == 5) return nightSkyTint;
+                return daySkyTint;
+            };
+
             Color skyTint = daySkyTint;
 
             if (weatherTransitionActive)
             {
-                Color fromSky = (weatherTransitionFromPhase == 1 || weatherTransitionFromPhase == 4 || weatherTransitionFromPhase == 5)
-                                    ? nightSkyTint
-                                    : daySkyTint;
-                Color toSky = (weatherTransitionToPhase == 1 || weatherTransitionToPhase == 4 || weatherTransitionToPhase == 5)
-                                  ? nightSkyTint
-                                  : daySkyTint;
+                Color fromSky = GetTargetSkyTint(weatherTransitionFromPhase);
+                Color toSky = GetTargetSkyTint(weatherTransitionToPhase);
                 skyTint = LerpColor(fromSky, toSky, weatherTransitionProgress);
             }
-            else if (summerPhase == 1 || summerPhase == 4 || summerPhase == 5)
+            else
             {
-                // Night phases: 21-40 (phase 1), 81-90 (phase 4), 91-100 (phase 5)
-                skyTint = nightSkyTint; // Dark blue
+                skyTint = GetTargetSkyTint(summerPhase);
             }
+
 
             DrawTexturePro(
                 desertBG,
@@ -835,25 +842,33 @@ int main()
         if (selectedEnvironment == 1)
         {
             Color dayGroundTint = WHITE;
+            Color cloudyGroundTint = (Color){185, 185, 185, 255};
             Color nightGroundTint = (Color){100, 110, 140, 255};
+
+            auto GetTargetGroundTint = [&](int phase) -> Color {
+                if (phase == 0) return dayGroundTint;
+                if (phase == 1) return nightGroundTint;
+                if (phase == 2) return LerpColor(dayGroundTint, cloudyGroundTint, cloudAlpha);
+                if (phase == 3) return cloudyGroundTint;
+                if (phase == 4 || phase == 5) return nightGroundTint;
+                return dayGroundTint;
+            };
+
             Color groundTint = dayGroundTint;
 
+            // ===== Weather Transition =====
             if (weatherTransitionActive)
             {
-                Color fromGround = (weatherTransitionFromPhase == 1 || weatherTransitionFromPhase == 4 || weatherTransitionFromPhase == 5)
-                                       ? nightGroundTint
-                                       : dayGroundTint;
-                Color toGround = (weatherTransitionToPhase == 1 || weatherTransitionToPhase == 4 || weatherTransitionToPhase == 5)
-                                     ? nightGroundTint
-                                     : dayGroundTint;
+                Color fromGround = GetTargetGroundTint(weatherTransitionFromPhase);
+                Color toGround = GetTargetGroundTint(weatherTransitionToPhase);
                 groundTint = LerpColor(fromGround, toGround, weatherTransitionProgress);
             }
-            else if (summerPhase == 1 || summerPhase == 4 || summerPhase == 5)
+            else
             {
-                // Night phases: dark tint
-                groundTint = nightGroundTint;
+                groundTint = GetTargetGroundTint(summerPhase);
             }
 
+            // ===== Draw Ground =====
             DrawTexturePro(
                 soilGround,
                 (Rectangle){0, 0, (float)soilGround.width, (float)soilGround.height},
