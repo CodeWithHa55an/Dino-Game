@@ -1,6 +1,8 @@
 
 
 #include "raylib.h"
+#include <cmath>
+
 
 struct RainDrop
 {
@@ -53,6 +55,8 @@ int main()
     Texture2D cactusTallSnowTexture = LoadTexture("Assets/Winter/CactusTallSnowy.png");
     Texture2D cactusVeryTallSnowTexture = LoadTexture("Assets/Winter/CactusVeryTallSnowy.png");
     Texture2D cactusFrostedTexture = LoadTexture("Assets/Winter/CactusFrosted.png");
+    //Menu
+     Texture2D menu = LoadTexture("Assets/Menu.png");
     // ==================== DINO VARIABLES ====================
     int dinoX = 100;
     int dinoY = 290;
@@ -148,6 +152,7 @@ int main()
     // ==================== DAY / NIGHT ====================
     bool isNight = false;
     int nextDayNightScore = 5; // Change every 20 points
+    
     int selectedEnvironment = 0;
     // 0 = not selected
     // 1 = Summer
@@ -271,7 +276,7 @@ int main()
                 isJumping = false;
             }
         }
-        if (IsKeyDown(KEY_DOWN) && !isJumping)
+        if (gameStarted && IsKeyDown(KEY_DOWN) && !isJumping)
         {
             isCrouching = true;
         }
@@ -715,7 +720,7 @@ int main()
 
         bool glowAndStickPhase = (cycleScore >= 21 && cycleScore <= 40) || (cycleScore > 80);
         // ---------- Clouds Enter ----------
-        if (cloudEntering)
+        if (gameStarted && cloudEntering)
         {
             if (leftCloudOffset < 0)
                 leftCloudOffset += 6.0f;
@@ -736,7 +741,7 @@ int main()
         }
 
         // ---------- Clouds Leave ----------
-        if (cloudLeaving)
+        if (gameStarted && cloudLeaving)
         {
             if (leftCloudOffset > -500)
                 leftCloudOffset -= 6.0f;
@@ -756,7 +761,153 @@ int main()
             }
         }
         BeginDrawing();
-        ClearBackground(WHITE);
+        if (!gameStarted)
+        {
+            ClearBackground(BLACK);
+
+            // Scale to fit maintaining aspect ratio (1419x736 -> 800x420)
+            float scale = fminf((float)screenWidth / menu.width, (float)screenHeight / menu.height);
+            float destWidth = menu.width * scale;
+            float destHeight = menu.height * scale;
+            float destX = (screenWidth - destWidth) / 2.0f;
+            float destY = (screenHeight - destHeight) / 2.0f;
+
+            // Draw scaled menu background
+            DrawTexturePro(menu, 
+                           (Rectangle){ 0.0f, 0.0f, (float)menu.width, (float)menu.height }, 
+                           (Rectangle){ destX, destY, destWidth, destHeight }, 
+                           (Vector2){ 0.0f, 0.0f }, 
+                           0.0f, 
+                           WHITE);
+
+            // Pulse animation timer
+            static float pulseTimer = 0.0f;
+            pulseTimer += GetFrameTime() * 4.0f;
+            float pulse = (sinf(pulseTimer) + 1.0f) / 2.0f; // 0.0f to 1.0f
+
+            // Update scale micro-animations
+            static float summerScale = 1.0f;
+            static float winterScale = 1.0f;
+            float targetSummerScale = (selectedEnvironment == 1) ? 1.08f : 1.0f;
+            float targetWinterScale = (selectedEnvironment == 2) ? 1.08f : 1.0f;
+            float dt = GetFrameTime();
+            summerScale += (targetSummerScale - summerScale) * 12.0f * dt;
+            winterScale += (targetWinterScale - winterScale) * 12.0f * dt;
+
+            // Mapped button coordinates in 1419x736 texture space
+            float summerTexX = 386.0f;
+            float summerTexY = 455.0f;
+            float summerTexW = 305.0f;
+            float summerTexH = 99.0f;
+
+            float winterTexX = 731.0f;
+            float winterTexY = 455.0f;
+            float winterTexW = 305.0f;
+            float winterTexH = 99.0f;
+
+            // Translate to screen coordinates
+            Rectangle summerScreenRec = {
+                destX + (summerTexX / 1419.0f) * destWidth,
+                destY + (summerTexY / 736.0f) * destHeight,
+                (summerTexW / 1419.0f) * destWidth,
+                (summerTexH / 736.0f) * destHeight
+            };
+
+            Rectangle winterScreenRec = {
+                destX + (winterTexX / 1419.0f) * destWidth,
+                destY + (winterTexY / 736.0f) * destHeight,
+                (winterTexW / 1419.0f) * destWidth,
+                (winterTexH / 736.0f) * destHeight
+            };
+
+            // Custom Button drawing helper
+            auto DrawCustomButton = [&](Rectangle baseRec, float scaleVal, bool selected, Color themeColor, const char* text, bool isSummer) {
+                // Scale rectangle centered
+                float newWidth = baseRec.width * scaleVal;
+                float newHeight = baseRec.height * scaleVal;
+                float newX = baseRec.x - (newWidth - baseRec.width) / 2.0f;
+                float newY = baseRec.y - (newHeight - baseRec.height) / 2.0f;
+                Rectangle rec = { newX, newY, newWidth, newHeight };
+
+                // Draw button background
+                Color bgColor = selected ? themeColor : BLACK;
+                Color borderColor = selected ? themeColor : (Color){215, 200, 180, 255};
+                
+                // Rounded button backing (covers the background image button)
+                DrawRectangleRounded(rec, 0.35f, 16, bgColor);
+                
+                // Borders
+                DrawRectangleRoundedLines(rec, 0.35f, 16, borderColor);
+                
+                if (selected)
+                {
+                    // Draw outer glow layers
+                    Rectangle outerRec1 = { rec.x - 2, rec.y - 2, rec.width + 4, rec.height + 4 };
+                    Rectangle outerRec2 = { rec.x - 4, rec.y - 4, rec.width + 8, rec.height + 8 };
+                    DrawRectangleRoundedLines(outerRec1, 0.35f, 16, Fade(themeColor, 0.35f * pulse));
+                    DrawRectangleRoundedLines(outerRec2, 0.35f, 16, Fade(themeColor, 0.15f * pulse));
+                }
+                else
+                {
+                    // Faint pulsing border for interactive feel when none is selected
+                    DrawRectangleRoundedLines(rec, 0.35f, 16, Fade(borderColor, 0.6f + 0.3f * pulse));
+                }
+
+                // Render procedural icons and text inside the button
+                int fontSize = rec.height * 0.28f;
+                int textWidth = MeasureText(text, fontSize);
+                
+                float contentWidth = textWidth + 30.0f; // text width + icon + spacing
+                float startX = rec.x + (rec.width - contentWidth) / 2.0f;
+                float centerY = rec.y + rec.height / 2.0f;
+                
+                Color textColor = selected ? WHITE : (Color){200, 190, 180, 255};
+                Color iconColor = selected ? WHITE : (Color){215, 200, 180, 255};
+
+                if (isSummer)
+                {
+                    // Procedural Sun: circle with lines for rays
+                    DrawCircle(startX + 10, centerY, 6, iconColor);
+                    for (int a = 0; a < 360; a += 45)
+                    {
+                        float rad = a * DEG2RAD;
+                        Vector2 start = { startX + 10 + cosf(rad) * 8, centerY + sinf(rad) * 8 };
+                        Vector2 end = { startX + 10 + cosf(rad) * 11, centerY + sinf(rad) * 11 };
+                        DrawLineEx(start, end, 1.5f, iconColor);
+                    }
+                }
+                else
+                {
+                    // Procedural Snowflake: intersecting lines with terminal ticks
+                    DrawLineEx((Vector2){ startX + 4, centerY }, (Vector2){ startX + 16, centerY }, 2.0f, iconColor);
+                    DrawLineEx((Vector2){ startX + 10, centerY - 6 }, (Vector2){ startX + 10, centerY + 6 }, 2.0f, iconColor);
+                    DrawLineEx((Vector2){ startX + 6, centerY - 4 }, (Vector2){ startX + 14, centerY + 4 }, 1.5f, iconColor);
+                    DrawLineEx((Vector2){ startX + 6, centerY + 4 }, (Vector2){ startX + 14, centerY - 4 }, 1.5f, iconColor);
+                }
+
+                // Draw label next to icon
+                DrawText(text, startX + 25.0f, centerY - fontSize / 2.0f, fontSize, textColor);
+            };
+
+            // Render custom button overlays on top of the menu image buttons
+            DrawCustomButton(summerScreenRec, summerScale, selectedEnvironment == 1, ORANGE, "SUMMER", true);
+            DrawCustomButton(winterScreenRec, winterScale, selectedEnvironment == 2, SKYBLUE, "WINTER", false);
+
+            // Pulse line under "Press ENTER to Start" if environment is selected
+            if (selectedEnvironment != 0)
+            {
+                Color themeColor = (selectedEnvironment == 1) ? ORANGE : SKYBLUE;
+                Color glowColor = LerpColor(themeColor, WHITE, pulse);
+                float lineX1 = destX + destWidth / 2.0f - 140.0f;
+                float lineX2 = destX + destWidth / 2.0f + 140.0f;
+                float lineY = destY + (680.0f / 736.0f) * destHeight;
+
+                DrawLineEx((Vector2){ lineX1, lineY }, (Vector2){ lineX2, lineY }, 2.5f, Fade(glowColor, 0.4f + 0.4f * pulse));
+            }
+        }
+        else
+        {
+            ClearBackground(WHITE);
         Color nightBG = (Color){20, 30, 60, 120};      // strong blue tint (background feel)
         Color nightObject = (Color){80, 100, 160, 60}; // lighter tint for objects
         // ==================== DRAW ENVIRONMENT ====================
@@ -1210,28 +1361,6 @@ int main()
         DrawText(TextFormat("Score: %d", score), 650, 20, 20, textColor);
         DrawText(TextFormat("High Score: %d", highscore), 600, 50, 20, textColor);
 
-        // Start screen
-        if (!gameStarted)
-        {
-            DrawText("DINO GAME", 260, 70, 45, BLACK);
-
-            DrawText("Select Environment", 240, 140, 30, DARKGRAY);
-
-            Color summerColor = BLACK;
-            Color winterColor = BLACK;
-
-            if (selectedEnvironment == 1)
-                summerColor = GREEN;
-
-            if (selectedEnvironment == 2)
-                winterColor = BLUE;
-
-            DrawText("Press 1 : Summer", 250, 190, 28, summerColor);
-            DrawText("Press 2 : Winter", 250, 230, 28, winterColor);
-
-            DrawText("Press ENTER to Start", 210, 310, 30, DARKGRAY);
-        }
-
         // Game over screen
         if (gameOver)
         {
@@ -1239,6 +1368,7 @@ int main()
             DrawText("Press R to restart", 285, 195, 25, DARKGRAY);
             DrawText(TextFormat("High Score: %d", highscore), 320, 240, 25, BLUE);
         }
+        } // Close gameStarted else block
 
         EndDrawing();
     }
@@ -1263,6 +1393,7 @@ int main()
     UnloadTexture(cactusFrostedTexture);
     UnloadTexture(dinoJump);
     UnloadTexture(dinoCrouchTexture);
+     UnloadTexture(menu);
 
     CloseWindow();
     return 0;
