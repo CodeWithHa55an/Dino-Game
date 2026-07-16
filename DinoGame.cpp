@@ -27,11 +27,12 @@ int main()
     Texture2D cactusShortTexture = LoadTexture("Assets/Cactus_Short.png");
     Texture2D cactusTallTexture = LoadTexture("Assets/Cactus_Tall.png");
     Texture2D cactusVeryTallTexture = LoadTexture("Assets/Cactus_VeryTall.png");
-    Texture2D dinoIdleTexture = LoadTexture("Assets/Dino_Idle.png");
-    Texture2D dinoRun1Texture = LoadTexture("Assets/Dino_Run.png");
-    Texture2D dinoRun2Texture = LoadTexture("Assets/Dino_Run2.png");
-    Texture2D dinoJump = LoadTexture("Assets/Dino_Jump.png");
-    Texture2D dinoCrouchTexture = LoadTexture("Assets/Dino_Crouch.png");
+    //dino
+    Texture2D dinoIdleTexture = LoadTexture("Assets/DinoIdle.png");
+    Texture2D dinoRun1Texture = LoadTexture("Assets/DinoFrontleg.png");
+    Texture2D dinoRun2Texture = LoadTexture("Assets/DinoBackleg.png");
+    Texture2D dinoJump = LoadTexture("Assets/Dinojump.png");
+    Texture2D dinoCrouchTexture = LoadTexture("Assets/DinoCrouch.png");
     // Summer
     Texture2D desertBG = LoadTexture("Assets/Summer/DesertBG1 copy.png");
     Texture2D bigCloud = LoadTexture("Assets/Summer/BigCloud.png");
@@ -59,14 +60,14 @@ int main()
      Texture2D menu = LoadTexture("Assets/Menu.png");
     // ==================== DINO VARIABLES ====================
     int dinoX = 100;
-    int dinoY = 290;
-    int dinoWidth = 40;
-    int dinoHeight = 60;
+    int dinoY = 260;
+    int dinoWidth = 62;
+    int dinoHeight = 80;
 
     int dinoSpeed = 0;
     int gravity = 1;
     int jumpPower = 18;
-    int ground = 300;
+    int ground = 260;
     bool isJumping = false;
     bool isMoving = false;
     int dinoRunCounter = 0;
@@ -1157,22 +1158,34 @@ int main()
             }
         }
         // ===== DRAW DINO =====
+        // Crouch draw dimensions
+        float crouchDrawW = 68.0f;
+        float crouchDrawH = 46.0f;
+        float crouchOffsetY = (float)dinoHeight - crouchDrawH; // vertically align to ground
+
+        // Torch position relative to dino size
+        int torchX = dinoX + dinoWidth - 10;
+        int torchY = dinoY + (int)(dinoHeight * 0.30f);
+
         if (isCrouching)
         {
             DrawTexturePro(
                 dinoCrouchTexture,
                 (Rectangle){0, 0, (float)dinoCrouchTexture.width, (float)dinoCrouchTexture.height},
-                (Rectangle){(float)dinoX, (float)(dinoY + 20), 50.0f, 40.0f},
+                (Rectangle){(float)dinoX, (float)(dinoY + crouchOffsetY), crouchDrawW, crouchDrawH},
                 (Vector2){0, 0},
                 0.0f,
                 WHITE);
+            // Recalculate torch for crouch
+            torchX = dinoX + (int)crouchDrawW - 8;
+            torchY = dinoY + (int)crouchOffsetY + (int)(crouchDrawH * 0.25f);
         }
         else if (isJumping)
         {
             DrawTexturePro(
                 dinoJump,
-                (Rectangle){0, 0, (float)dinoIdleTexture.width, (float)dinoIdleTexture.height},
-                (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
+                (Rectangle){0, 0, (float)dinoJump.width, (float)dinoJump.height},
+                (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
                 (Vector2){0, 0},
                 0.0f,
                 WHITE);
@@ -1184,7 +1197,7 @@ int main()
                 DrawTexturePro(
                     dinoRun1Texture,
                     (Rectangle){0, 0, (float)dinoRun1Texture.width, (float)dinoRun1Texture.height},
-                    (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
+                    (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
                     (Vector2){0, 0},
                     0.0f,
                     WHITE);
@@ -1194,7 +1207,7 @@ int main()
                 DrawTexturePro(
                     dinoRun2Texture,
                     (Rectangle){0, 0, (float)dinoRun2Texture.width, (float)dinoRun2Texture.height},
-                    (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
+                    (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
                     (Vector2){0, 0},
                     0.0f,
                     WHITE);
@@ -1205,7 +1218,7 @@ int main()
             DrawTexturePro(
                 dinoIdleTexture,
                 (Rectangle){0, 0, (float)dinoIdleTexture.width, (float)dinoIdleTexture.height},
-                (Rectangle){(float)dinoX, (float)dinoY, 40.0f, 60.0f},
+                (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
                 (Vector2){0, 0},
                 0.0f,
                 WHITE);
@@ -1214,43 +1227,43 @@ int main()
         {
             // torch stick
             DrawRectangle(
-                dinoX + 32,
-                dinoY + 20,
+                torchX,
+                torchY,
                 3,
                 15,
                 BROWN);
 
             // flame
             DrawCircle(
-                dinoX + 33,
-                dinoY + 18,
-                4,
+                torchX + 1,
+                torchY - 2,
+                5,
                 ORANGE);
 
             DrawCircle(
-                dinoX + 33,
-                dinoY + 18,
-                2,
+                torchX + 1,
+                torchY - 2,
+                3,
                 YELLOW);
         }
         if (glowAndStickPhase)
         {
             DrawCircle(
-                dinoX + 33,
-                dinoY + 18,
-                90,
+                torchX + 1,
+                torchY - 2,
+                100,
                 Fade(YELLOW, 0.01f));
 
             DrawCircle(
-                dinoX + 33,
-                dinoY + 18,
-                60,
+                torchX + 1,
+                torchY - 2,
+                70,
                 Fade(ORANGE, 0.02f));
 
             DrawCircle(
-                dinoX + 33,
-                dinoY + 18,
-                35,
+                torchX + 1,
+                torchY - 2,
+                40,
                 Fade(YELLOW, 0.03f));
         }
         // ===== DRAW CACTUS 1 =====
