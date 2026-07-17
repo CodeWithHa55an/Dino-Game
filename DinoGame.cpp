@@ -3,7 +3,6 @@
 #include "raylib.h"
 #include <cmath>
 
-
 struct RainDrop
 {
     float x;
@@ -27,7 +26,7 @@ int main()
     Texture2D cactusShortTexture = LoadTexture("Assets/Cactus_Short.png");
     Texture2D cactusTallTexture = LoadTexture("Assets/Cactus_Tall.png");
     Texture2D cactusVeryTallTexture = LoadTexture("Assets/Cactus_VeryTall.png");
-    //dino
+    // dino
     Texture2D dinoIdleTexture = LoadTexture("Assets/Dino1.png");
     Texture2D dinoRun1Texture = LoadTexture("Assets/DinoFrontleg1.png");
     Texture2D dinoRun2Texture = LoadTexture("Assets/DinoBackleg1.png");
@@ -56,8 +55,8 @@ int main()
     Texture2D cactusTallSnowTexture = LoadTexture("Assets/Winter/CactusTallSnowy.png");
     Texture2D cactusVeryTallSnowTexture = LoadTexture("Assets/Winter/CactusVeryTallSnowy.png");
     Texture2D cactusFrostedTexture = LoadTexture("Assets/Winter/CactusFrosted.png");
-    //Menu
-     Texture2D menu = LoadTexture("Assets/Menu.png");
+    // Menu
+    Texture2D menu = LoadTexture("Assets/Menu.png");
     // ==================== DINO VARIABLES ====================
     int dinoX = 100;
     int dinoY = 230;
@@ -153,7 +152,7 @@ int main()
     // ==================== DAY / NIGHT ====================
     bool isNight = false;
     int nextDayNightScore = 5; // Change every 20 points
-    
+
     int selectedEnvironment = 0;
     // 0 = not selected
     // 1 = Summer
@@ -774,11 +773,11 @@ int main()
             float destY = (screenHeight - destHeight) / 2.0f;
 
             // Draw scaled menu background
-            DrawTexturePro(menu, 
-                           (Rectangle){ 0.0f, 0.0f, (float)menu.width, (float)menu.height }, 
-                           (Rectangle){ destX, destY, destWidth, destHeight }, 
-                           (Vector2){ 0.0f, 0.0f }, 
-                           0.0f, 
+            DrawTexturePro(menu,
+                           (Rectangle){0.0f, 0.0f, (float)menu.width, (float)menu.height},
+                           (Rectangle){destX, destY, destWidth, destHeight},
+                           (Vector2){0.0f, 0.0f},
+                           0.0f,
                            WHITE);
 
             // Pulse animation timer
@@ -811,40 +810,39 @@ int main()
                 destX + (summerTexX / 1419.0f) * destWidth,
                 destY + (summerTexY / 736.0f) * destHeight,
                 (summerTexW / 1419.0f) * destWidth,
-                (summerTexH / 736.0f) * destHeight
-            };
+                (summerTexH / 736.0f) * destHeight};
 
             Rectangle winterScreenRec = {
                 destX + (winterTexX / 1419.0f) * destWidth,
                 destY + (winterTexY / 736.0f) * destHeight,
                 (winterTexW / 1419.0f) * destWidth,
-                (winterTexH / 736.0f) * destHeight
-            };
+                (winterTexH / 736.0f) * destHeight};
 
             // Custom Button drawing helper
-            auto DrawCustomButton = [&](Rectangle baseRec, float scaleVal, bool selected, Color themeColor, const char* text, bool isSummer) {
+            auto DrawCustomButton = [&](Rectangle baseRec, float scaleVal, bool selected, Color themeColor, const char *text, bool isSummer)
+            {
                 // Scale rectangle centered
                 float newWidth = baseRec.width * scaleVal;
                 float newHeight = baseRec.height * scaleVal;
                 float newX = baseRec.x - (newWidth - baseRec.width) / 2.0f;
                 float newY = baseRec.y - (newHeight - baseRec.height) / 2.0f;
-                Rectangle rec = { newX, newY, newWidth, newHeight };
+                Rectangle rec = {newX, newY, newWidth, newHeight};
 
                 // Draw button background
                 Color bgColor = selected ? themeColor : BLACK;
                 Color borderColor = selected ? themeColor : (Color){215, 200, 180, 255};
-                
+
                 // Rounded button backing (covers the background image button)
                 DrawRectangleRounded(rec, 0.35f, 16, bgColor);
-                
+
                 // Borders
                 DrawRectangleRoundedLines(rec, 0.35f, 16, borderColor);
-                
+
                 if (selected)
                 {
                     // Draw outer glow layers
-                    Rectangle outerRec1 = { rec.x - 2, rec.y - 2, rec.width + 4, rec.height + 4 };
-                    Rectangle outerRec2 = { rec.x - 4, rec.y - 4, rec.width + 8, rec.height + 8 };
+                    Rectangle outerRec1 = {rec.x - 2, rec.y - 2, rec.width + 4, rec.height + 4};
+                    Rectangle outerRec2 = {rec.x - 4, rec.y - 4, rec.width + 8, rec.height + 8};
                     DrawRectangleRoundedLines(outerRec1, 0.35f, 16, Fade(themeColor, 0.35f * pulse));
                     DrawRectangleRoundedLines(outerRec2, 0.35f, 16, Fade(themeColor, 0.15f * pulse));
                 }
@@ -857,11 +855,11 @@ int main()
                 // Render procedural icons and text inside the button
                 int fontSize = rec.height * 0.28f;
                 int textWidth = MeasureText(text, fontSize);
-                
+
                 float contentWidth = textWidth + 30.0f; // text width + icon + spacing
                 float startX = rec.x + (rec.width - contentWidth) / 2.0f;
                 float centerY = rec.y + rec.height / 2.0f;
-                
+
                 Color textColor = selected ? WHITE : (Color){200, 190, 180, 255};
                 Color iconColor = selected ? WHITE : (Color){215, 200, 180, 255};
 
@@ -872,18 +870,18 @@ int main()
                     for (int a = 0; a < 360; a += 45)
                     {
                         float rad = a * DEG2RAD;
-                        Vector2 start = { startX + 10 + cosf(rad) * 8, centerY + sinf(rad) * 8 };
-                        Vector2 end = { startX + 10 + cosf(rad) * 11, centerY + sinf(rad) * 11 };
+                        Vector2 start = {startX + 10 + cosf(rad) * 8, centerY + sinf(rad) * 8};
+                        Vector2 end = {startX + 10 + cosf(rad) * 11, centerY + sinf(rad) * 11};
                         DrawLineEx(start, end, 1.5f, iconColor);
                     }
                 }
                 else
                 {
                     // Procedural Snowflake: intersecting lines with terminal ticks
-                    DrawLineEx((Vector2){ startX + 4, centerY }, (Vector2){ startX + 16, centerY }, 2.0f, iconColor);
-                    DrawLineEx((Vector2){ startX + 10, centerY - 6 }, (Vector2){ startX + 10, centerY + 6 }, 2.0f, iconColor);
-                    DrawLineEx((Vector2){ startX + 6, centerY - 4 }, (Vector2){ startX + 14, centerY + 4 }, 1.5f, iconColor);
-                    DrawLineEx((Vector2){ startX + 6, centerY + 4 }, (Vector2){ startX + 14, centerY - 4 }, 1.5f, iconColor);
+                    DrawLineEx((Vector2){startX + 4, centerY}, (Vector2){startX + 16, centerY}, 2.0f, iconColor);
+                    DrawLineEx((Vector2){startX + 10, centerY - 6}, (Vector2){startX + 10, centerY + 6}, 2.0f, iconColor);
+                    DrawLineEx((Vector2){startX + 6, centerY - 4}, (Vector2){startX + 14, centerY + 4}, 1.5f, iconColor);
+                    DrawLineEx((Vector2){startX + 6, centerY + 4}, (Vector2){startX + 14, centerY - 4}, 1.5f, iconColor);
                 }
 
                 // Draw label next to icon
@@ -903,484 +901,498 @@ int main()
                 float lineX2 = destX + destWidth / 2.0f + 140.0f;
                 float lineY = destY + (680.0f / 736.0f) * destHeight;
 
-                DrawLineEx((Vector2){ lineX1, lineY }, (Vector2){ lineX2, lineY }, 2.5f, Fade(glowColor, 0.4f + 0.4f * pulse));
+                DrawLineEx((Vector2){lineX1, lineY}, (Vector2){lineX2, lineY}, 2.5f, Fade(glowColor, 0.4f + 0.4f * pulse));
             }
         }
         else
         {
             ClearBackground(WHITE);
-        Color nightBG = (Color){20, 30, 60, 120};      // strong blue tint (background feel)
-        Color nightObject = (Color){80, 100, 160, 60}; // lighter tint for objects
-        // ==================== DRAW ENVIRONMENT ====================
-        if (selectedEnvironment == 1)
-        {
-            // BACKGROUND tint system based on weather phase
-            Color daySkyTint = WHITE;
-            Color cloudySkyTint = (Color){185, 190, 200, 255}; // Light gray-blue
-            Color nightSkyTint = (Color){60, 60, 100, 255};
-
-            auto GetTargetSkyTint = [&](int phase) -> Color {
-                if (phase == 0) return daySkyTint;
-                if (phase == 1) return nightSkyTint;
-                if (phase == 2) return LerpColor(daySkyTint, cloudySkyTint, cloudAlpha);
-                if (phase == 3) return cloudySkyTint;
-                if (phase == 4 || phase == 5) return nightSkyTint;
-                return daySkyTint;
-            };
-
-            Color skyTint = daySkyTint;
-
-            if (weatherTransitionActive)
+            Color nightBG = (Color){20, 30, 60, 120};      // strong blue tint (background feel)
+            Color nightObject = (Color){80, 100, 160, 60}; // lighter tint for objects
+            // ==================== DRAW ENVIRONMENT ====================
+            if (selectedEnvironment == 1)
             {
-                Color fromSky = GetTargetSkyTint(weatherTransitionFromPhase);
-                Color toSky = GetTargetSkyTint(weatherTransitionToPhase);
-                skyTint = LerpColor(fromSky, toSky, weatherTransitionProgress);
-            }
-            else
-            {
-                skyTint = GetTargetSkyTint(summerPhase);
-            }
+                // BACKGROUND tint system based on weather phase
+                Color daySkyTint = WHITE;
+                Color cloudySkyTint = (Color){185, 190, 200, 255}; // Light gray-blue
+                Color nightSkyTint = (Color){60, 60, 100, 255};
 
-
-            DrawTexturePro(
-                desertBG,
-                (Rectangle){0, 0, (float)desertBG.width, (float)desertBG.height},
-                (Rectangle){0, 0, 800, 420},
-                (Vector2){0, 0},
-                0,
-                skyTint);
-
-            // 🌞 SUN / 🌙 MOON SWITCH - draw celestial body based on phase
-            if (cycleScore <= 20 || (cycleScore > 40 && cycleScore <= 80))
-            {
-                // SUN visible: 0-20, 41-60, 61-80
-                DrawCircle(sunX + 40, 70, 70, Fade(YELLOW, 0.08f));
-                DrawCircle(sunX + 40, sunY + 40, 55, Fade(ORANGE, 0.12f));
-                DrawCircle(sunX + 40, sunY + 40, 40, Fade(YELLOW, 0.18f));
-                DrawTexturePro(
-                    sunTexture,
-                    (Rectangle){0, 0, (float)sunTexture.width, (float)sunTexture.height},
-                    (Rectangle){sunX, 30, 80, 80},
-                    (Vector2){0, 0},
-                    0,
-                    WHITE);
-            }
-            else
-            {
-                // Moon Glow
-                DrawCircle(moonX + 35, 85, 70, Fade((Color){150, 200, 255, 255}, 0.05f));
-                DrawCircle(moonX + 35, 85, 55, Fade((Color){200, 225, 255, 255}, 0.08f));
-                DrawCircle(moonX + 35, 85, 40, Fade((Color){235, 245, 255, 255}, 0.12f));
-                DrawTexturePro(
-                    moonSummer,
-                    (Rectangle){0, 0, (float)moonSummer.width, (float)moonSummer.height},
-                    (Rectangle){moonX, 50, 70, 70},
-                    (Vector2){0, 0},
-                    0,
-                    WHITE);
-            }
-        }
-        else if (selectedEnvironment == 2)
-        {
-            DrawTexturePro(
-                snowBG,
-                (Rectangle){0, 0, (float)snowBG.width, (float)snowBG.height},
-                (Rectangle){0, 0, 800, 420},
-                (Vector2){0, 0},
-                0,
-                WHITE);
-        }
-        // ===== DRAW GROUND =====
-        if (selectedEnvironment == 1)
-        {
-            Color dayGroundTint = WHITE;
-            Color cloudyGroundTint = (Color){185, 185, 185, 255};
-            Color nightGroundTint = (Color){100, 110, 140, 255};
-
-            auto GetTargetGroundTint = [&](int phase) -> Color {
-                if (phase == 0) return dayGroundTint;
-                if (phase == 1) return nightGroundTint;
-                if (phase == 2) return LerpColor(dayGroundTint, cloudyGroundTint, cloudAlpha);
-                if (phase == 3) return cloudyGroundTint;
-                if (phase == 4 || phase == 5) return nightGroundTint;
-                return dayGroundTint;
-            };
-
-            Color groundTint = dayGroundTint;
-
-            // ===== Weather Transition =====
-            if (weatherTransitionActive)
-            {
-                Color fromGround = GetTargetGroundTint(weatherTransitionFromPhase);
-                Color toGround = GetTargetGroundTint(weatherTransitionToPhase);
-                groundTint = LerpColor(fromGround, toGround, weatherTransitionProgress);
-            }
-            else
-            {
-                groundTint = GetTargetGroundTint(summerPhase);
-            }
-
-            // ===== Draw Ground =====
-            DrawTexturePro(
-                soilGround,
-                (Rectangle){0, 0, (float)soilGround.width, (float)soilGround.height},
-                (Rectangle){0, 340, 800, 80},
-                (Vector2){0, 0},
-                0,
-                groundTint);
-        }
-        else if (selectedEnvironment == 2)
-        {
-            DrawTexturePro(
-                snowGround,
-                (Rectangle){0, 0, (float)snowGround.width, (float)snowGround.height},
-                (Rectangle){0, 340, 800, 80},
-                (Vector2){0, 0},
-                0,
-                WHITE);
-        }
-
-        // Draw ground line
-        Color groundColor = isNight ? WHITE : BLACK;
-
-        // Draw clouds
-        if (selectedEnvironment == 2)
-        {
-            DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
-            DrawCircle(cloud1X + 20, cloud1Y, 20, LIGHTGRAY);
-            DrawCircle(cloud1X + 40, cloud1Y, 20, LIGHTGRAY);
-
-            DrawCircle(cloud2X, cloud2Y, 20, LIGHTGRAY);
-            DrawCircle(cloud2X + 20, cloud2Y, 20, LIGHTGRAY);
-            DrawCircle(cloud2X + 40, cloud2Y, 20, LIGHTGRAY);
-
-            DrawCircle(cloud3X, cloud3Y, 20, LIGHTGRAY);
-            DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
-            DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
-        }
-        // ================= RAIN CLOUDS =================
-        if ((cycleScore >= 59 && cycleScore <= 90) ||
-            cloudEntering ||
-            cloudLeaving)
-        {
-            // ================= TOP ROW =================
-
-            // Left Half
-            for (int x = -40; x < 400; x += 250)
-            {
-                DrawTextureEx(
-                    rainycloud,
-                    (Vector2){leftCloudOffset + x, -60},
-                    0.0f,
-                    0.45f,
-                    Fade(WHITE, cloudAlpha));
-            }
-
-            // Right Half
-            for (int x = 220; x < screenWidth + 200; x += 250)
-            {
-                DrawTextureEx(
-                    rainycloud,
-                    (Vector2){rightCloudOffset + x, -60},
-                    0.0f,
-                    0.45f,
-                    Fade(WHITE, cloudAlpha));
-            }
-
-            // ================= MIDDLE ROW =================
-
-            // Left Half
-            for (int x = -150; x < 400; x += 250)
-            {
-                DrawTextureEx(
-                    rainycloud,
-                    (Vector2){leftCloudOffset + x, -15},
-                    0.0f,
-                    0.45f,
-                    Fade(WHITE, cloudAlpha * 0.9f));
-            }
-
-            // Right Half
-            for (int x = 110; x < screenWidth + 200; x += 250)
-            {
-                DrawTextureEx(
-                    rainycloud,
-                    (Vector2){rightCloudOffset + x, -15},
-                    0.0f,
-                    0.45f,
-                    Fade(WHITE, cloudAlpha * 0.9f));
-            }
-
-            // ================= BOTTOM ROW =================
-
-            // Left Half
-            for (int x = -50; x < 400; x += 250)
-            {
-                DrawTextureEx(
-                    rainycloud,
-                    (Vector2){leftCloudOffset + x, 30},
-                    0.0f,
-                    0.40f,
-                    Fade(WHITE, cloudAlpha * 0.85f));
-            }
-
-            // Right Half
-            for (int x = 210; x < screenWidth + 200; x += 250)
-            {
-                DrawTextureEx(
-                    rainycloud,
-                    (Vector2){rightCloudOffset + x, 30},
-                    0.0f,
-                    0.40f,
-                    Fade(WHITE, cloudAlpha * 0.85f));
-            }
-
-            // ================= RAIN =================
-
-            if (!cloudEntering &&
-                !cloudLeaving &&
-                cloudAlpha >= 1.0f &&
-                cycleScore >= 61 &&
-                cycleScore <= 87)
-            {
-                for (int i = 0; i < rainCount; i++)
+                auto GetTargetSkyTint = [&](int phase) -> Color
                 {
-                    Color rainColor = (summerPhase == 4)
-                                          ? (Color){220, 235, 255, 180}
-                                          : (Color){90, 170, 255, 150};
+                    if (phase == 0)
+                        return daySkyTint;
+                    if (phase == 1)
+                        return nightSkyTint;
+                    if (phase == 2)
+                        return LerpColor(daySkyTint, cloudySkyTint, cloudAlpha);
+                    if (phase == 3)
+                        return cloudySkyTint;
+                    if (phase == 4 || phase == 5)
+                        return nightSkyTint;
+                    return daySkyTint;
+                };
 
-                    DrawLineEx(
-                        (Vector2){rain[i].x, rain[i].y},
-                        (Vector2){rain[i].x - 2, rain[i].y + 10},
-                        1.5f,
-                        rainColor);
+                Color skyTint = daySkyTint;
+
+                if (weatherTransitionActive)
+                {
+                    Color fromSky = GetTargetSkyTint(weatherTransitionFromPhase);
+                    Color toSky = GetTargetSkyTint(weatherTransitionToPhase);
+                    skyTint = LerpColor(fromSky, toSky, weatherTransitionProgress);
+                }
+                else
+                {
+                    skyTint = GetTargetSkyTint(summerPhase);
+                }
+
+                DrawTexturePro(
+                    desertBG,
+                    (Rectangle){0, 0, (float)desertBG.width, (float)desertBG.height},
+                    (Rectangle){0, 0, 800, 420},
+                    (Vector2){0, 0},
+                    0,
+                    skyTint);
+
+                // 🌞 SUN / 🌙 MOON SWITCH - draw celestial body based on phase
+                if (cycleScore <= 20 || (cycleScore > 40 && cycleScore <= 80))
+                {
+                    // SUN visible: 0-20, 41-60, 61-80
+                    DrawCircle(sunX + 40, 70, 70, Fade(YELLOW, 0.08f));
+                    DrawCircle(sunX + 40, sunY + 40, 55, Fade(ORANGE, 0.12f));
+                    DrawCircle(sunX + 40, sunY + 40, 40, Fade(YELLOW, 0.18f));
+                    DrawTexturePro(
+                        sunTexture,
+                        (Rectangle){0, 0, (float)sunTexture.width, (float)sunTexture.height},
+                        (Rectangle){sunX, 30, 80, 80},
+                        (Vector2){0, 0},
+                        0,
+                        WHITE);
+                }
+                else
+                {
+                    // Moon Glow
+                    DrawCircle(moonX + 35, 85, 70, Fade((Color){150, 200, 255, 255}, 0.05f));
+                    DrawCircle(moonX + 35, 85, 55, Fade((Color){200, 225, 255, 255}, 0.08f));
+                    DrawCircle(moonX + 35, 85, 40, Fade((Color){235, 245, 255, 255}, 0.12f));
+                    DrawTexturePro(
+                        moonSummer,
+                        (Rectangle){0, 0, (float)moonSummer.width, (float)moonSummer.height},
+                        (Rectangle){moonX, 50, 70, 70},
+                        (Vector2){0, 0},
+                        0,
+                        WHITE);
                 }
             }
-        }
-        // ===== DRAW DINO =====
-        // Crouch draw dimensions
-        float crouchDrawW = 68.0f;
-        float crouchDrawH = 46.0f;
-        float crouchOffsetY = (float)dinoHeight - crouchDrawH; // vertically align to ground
-
-        // Torch position relative to dino size
-        int torchX = dinoX + dinoWidth - 10;
-        int torchY = dinoY + (int)(dinoHeight * 0.30f);
-
-        if (isCrouching)
-        {
-            DrawTexturePro(
-                dinoCrouchTexture,
-                (Rectangle){0, 0, (float)dinoCrouchTexture.width, (float)dinoCrouchTexture.height},
-                (Rectangle){(float)dinoX, (float)(dinoY + crouchOffsetY), crouchDrawW, crouchDrawH},
-                (Vector2){0, 0},
-                0.0f,
-                WHITE);
-            // Recalculate torch for crouch
-            torchX = dinoX + (int)crouchDrawW - 8;
-            torchY = dinoY + (int)crouchOffsetY + (int)(crouchDrawH * 0.25f);
-        }
-        else if (isJumping)
-        {
-            DrawTexturePro(
-                dinoJump,
-                (Rectangle){0, 0, (float)dinoJump.width, (float)dinoJump.height},
-                (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
-                (Vector2){0, 0},
-                0.0f,
-                WHITE);
-        }
-        else if (isMoving)
-        {
-            if (dinoRunFrame == 0)
+            else if (selectedEnvironment == 2)
             {
                 DrawTexturePro(
-                    dinoRun1Texture,
-                    (Rectangle){0, 0, (float)dinoRun1Texture.width, (float)dinoRun1Texture.height},
+                    snowBG,
+                    (Rectangle){0, 0, (float)snowBG.width, (float)snowBG.height},
+                    (Rectangle){0, 0, 800, 420},
+                    (Vector2){0, 0},
+                    0,
+                    WHITE);
+            }
+            // ===== DRAW GROUND =====
+            if (selectedEnvironment == 1)
+            {
+                Color dayGroundTint = WHITE;
+                Color cloudyGroundTint = (Color){185, 185, 185, 255};
+                Color nightGroundTint = (Color){100, 110, 140, 255};
+
+                auto GetTargetGroundTint = [&](int phase) -> Color
+                {
+                    if (phase == 0)
+                        return dayGroundTint;
+                    if (phase == 1)
+                        return nightGroundTint;
+                    if (phase == 2)
+                        return LerpColor(dayGroundTint, cloudyGroundTint, cloudAlpha);
+                    if (phase == 3)
+                        return cloudyGroundTint;
+                    if (phase == 4 || phase == 5)
+                        return nightGroundTint;
+                    return dayGroundTint;
+                };
+
+                Color groundTint = dayGroundTint;
+
+                // ===== Weather Transition =====
+                if (weatherTransitionActive)
+                {
+                    Color fromGround = GetTargetGroundTint(weatherTransitionFromPhase);
+                    Color toGround = GetTargetGroundTint(weatherTransitionToPhase);
+                    groundTint = LerpColor(fromGround, toGround, weatherTransitionProgress);
+                }
+                else
+                {
+                    groundTint = GetTargetGroundTint(summerPhase);
+                }
+
+                // ===== Draw Ground =====
+                DrawTexturePro(
+                    soilGround,
+                    (Rectangle){0, 0, (float)soilGround.width, (float)soilGround.height},
+                    (Rectangle){0, 340, 800, 80},
+                    (Vector2){0, 0},
+                    0,
+                    groundTint);
+            }
+            else if (selectedEnvironment == 2)
+            {
+                DrawTexturePro(
+                    snowGround,
+                    (Rectangle){0, 0, (float)snowGround.width, (float)snowGround.height},
+                    (Rectangle){0, 340, 800, 80},
+                    (Vector2){0, 0},
+                    0,
+                    WHITE);
+            }
+
+            // Draw ground line
+            Color groundColor = isNight ? WHITE : BLACK;
+
+            // Draw clouds
+            if (selectedEnvironment == 2)
+            {
+                DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
+                DrawCircle(cloud1X + 20, cloud1Y, 20, LIGHTGRAY);
+                DrawCircle(cloud1X + 40, cloud1Y, 20, LIGHTGRAY);
+
+                DrawCircle(cloud2X, cloud2Y, 20, LIGHTGRAY);
+                DrawCircle(cloud2X + 20, cloud2Y, 20, LIGHTGRAY);
+                DrawCircle(cloud2X + 40, cloud2Y, 20, LIGHTGRAY);
+
+                DrawCircle(cloud3X, cloud3Y, 20, LIGHTGRAY);
+                DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
+                DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
+            }
+            // ================= RAIN CLOUDS =================
+            if ((cycleScore >= 59 && cycleScore <= 90) ||
+                cloudEntering ||
+                cloudLeaving)
+            {
+                // ================= TOP ROW =================
+
+                // Left Half
+                for (int x = -40; x < 400; x += 250)
+                {
+                    DrawTextureEx(
+                        rainycloud,
+                        (Vector2){leftCloudOffset + x, -60},
+                        0.0f,
+                        0.45f,
+                        Fade(WHITE, cloudAlpha));
+                }
+
+                // Right Half
+                for (int x = 220; x < screenWidth + 200; x += 250)
+                {
+                    DrawTextureEx(
+                        rainycloud,
+                        (Vector2){rightCloudOffset + x, -60},
+                        0.0f,
+                        0.45f,
+                        Fade(WHITE, cloudAlpha));
+                }
+
+                // ================= MIDDLE ROW =================
+
+                // Left Half
+                for (int x = -150; x < 400; x += 250)
+                {
+                    DrawTextureEx(
+                        rainycloud,
+                        (Vector2){leftCloudOffset + x, -15},
+                        0.0f,
+                        0.45f,
+                        Fade(WHITE, cloudAlpha * 0.9f));
+                }
+
+                // Right Half
+                for (int x = 110; x < screenWidth + 200; x += 250)
+                {
+                    DrawTextureEx(
+                        rainycloud,
+                        (Vector2){rightCloudOffset + x, -15},
+                        0.0f,
+                        0.45f,
+                        Fade(WHITE, cloudAlpha * 0.9f));
+                }
+
+                // ================= BOTTOM ROW =================
+
+                // Left Half
+                for (int x = -50; x < 400; x += 250)
+                {
+                    DrawTextureEx(
+                        rainycloud,
+                        (Vector2){leftCloudOffset + x, 30},
+                        0.0f,
+                        0.40f,
+                        Fade(WHITE, cloudAlpha * 0.85f));
+                }
+
+                // Right Half
+                for (int x = 210; x < screenWidth + 200; x += 250)
+                {
+                    DrawTextureEx(
+                        rainycloud,
+                        (Vector2){rightCloudOffset + x, 30},
+                        0.0f,
+                        0.40f,
+                        Fade(WHITE, cloudAlpha * 0.85f));
+                }
+
+                // ================= RAIN =================
+
+                if (!cloudEntering &&
+                    !cloudLeaving &&
+                    cloudAlpha >= 1.0f &&
+                    cycleScore >= 61 &&
+                    cycleScore <= 87)
+                {
+                    for (int i = 0; i < rainCount; i++)
+                    {
+                        Color rainColor = (summerPhase == 4)
+                                              ? (Color){220, 235, 255, 180}
+                                              : (Color){90, 170, 255, 150};
+
+                        DrawLineEx(
+                            (Vector2){rain[i].x, rain[i].y},
+                            (Vector2){rain[i].x - 2, rain[i].y + 10},
+                            1.5f,
+                            rainColor);
+                    }
+                }
+            }
+            // ===== DRAW DINO =====
+            // Crouch draw dimensions
+            float crouchDrawW = 68.0f;
+            float crouchDrawH = 46.0f;
+            float crouchOffsetY = (float)dinoHeight - crouchDrawH; // vertically align to ground
+
+            // Torch position relative to dino size
+            int torchX = dinoX + dinoWidth - 10;
+            int torchY = dinoY + (int)(dinoHeight * 0.30f);
+
+            if (isCrouching)
+            {
+                DrawTexturePro(
+                    dinoCrouchTexture,
+                    (Rectangle){0, 0, (float)dinoCrouchTexture.width, (float)dinoCrouchTexture.height},
+                    (Rectangle){(float)dinoX, (float)(dinoY + crouchOffsetY), crouchDrawW, crouchDrawH},
+                    (Vector2){0, 0},
+                    0.0f,
+                    WHITE);
+                // Recalculate torch for crouch
+                torchX = dinoX + (int)crouchDrawW - 8;
+                torchY = dinoY + (int)crouchOffsetY + (int)(crouchDrawH * 0.25f);
+            }
+            else if (isJumping)
+            {
+                DrawTexturePro(
+                    dinoJump,
+                    (Rectangle){0, 0, (float)dinoJump.width, (float)dinoJump.height},
                     (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
                     (Vector2){0, 0},
                     0.0f,
                     WHITE);
+            }
+            else if (isMoving)
+            {
+                if (dinoRunFrame == 0)
+                {
+                    DrawTexturePro(
+                        dinoRun1Texture,
+                        (Rectangle){0, 0, (float)dinoRun1Texture.width, (float)dinoRun1Texture.height},
+                        (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
+                        (Vector2){0, 0},
+                        0.0f,
+                        WHITE);
+                }
+                else
+                {
+                    DrawTexturePro(
+                        dinoRun2Texture,
+                        (Rectangle){0, 0, (float)dinoRun2Texture.width, (float)dinoRun2Texture.height},
+                        (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
+                        (Vector2){0, 0},
+                        0.0f,
+                        WHITE);
+                }
             }
             else
             {
                 DrawTexturePro(
-                    dinoRun2Texture,
-                    (Rectangle){0, 0, (float)dinoRun2Texture.width, (float)dinoRun2Texture.height},
+                    dinoIdleTexture,
+                    (Rectangle){0, 0, (float)dinoIdleTexture.width, (float)dinoIdleTexture.height},
                     (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
                     (Vector2){0, 0},
                     0.0f,
                     WHITE);
             }
-        }
-        else
-        {
-            DrawTexturePro(
-                dinoIdleTexture,
-                (Rectangle){0, 0, (float)dinoIdleTexture.width, (float)dinoIdleTexture.height},
-                (Rectangle){(float)dinoX, (float)dinoY, (float)dinoWidth, (float)dinoHeight},
-                (Vector2){0, 0},
-                0.0f,
-                WHITE);
-        }
-        if (glowAndStickPhase)
-        {
-            // torch stick
-            DrawRectangle(
-                torchX,
-                torchY,
-                3,
-                15,
-                BROWN);
+            int torchOffsetY = 10; // Increase/decrease this value to move the torch
+            if (glowAndStickPhase)
+            {
+                // torch stick
+                float torchRotation = isCrouching ? 240.0f : 200.0f;
 
-            // flame
-            DrawCircle(
-                torchX + 1,
-                torchY - 2,
-                5,
-                ORANGE);
+                DrawRectanglePro(
+                    (Rectangle){(float)torchX, (float)(torchY + torchOffsetY), 3.0f, 15.0f},
+                    (Vector2){1.5f, 13.0f},
+                    torchRotation,
+                    BROWN);
 
-            DrawCircle(
-                torchX + 1,
-                torchY - 2,
-                3,
-                YELLOW);
-        }
-        if (glowAndStickPhase)
-        {
-            DrawCircle(
-                torchX + 1,
-                torchY - 2,
-                100,
-                Fade(YELLOW, 0.01f));
+                // flame
+                DrawCircle(
+                    torchX + 1,
+                    torchY + torchOffsetY - 2,
+                    5,
+                    ORANGE);
 
-            DrawCircle(
-                torchX + 1,
-                torchY - 2,
-                70,
-                Fade(ORANGE, 0.02f));
+                DrawCircle(
+                    torchX + 1,
+                    torchY + torchOffsetY - 2,
+                    3,
+                    YELLOW);
+            }
 
-            DrawCircle(
-                torchX + 1,
-                torchY - 2,
-                40,
-                Fade(YELLOW, 0.03f));
-        }
-        // ===== DRAW CACTUS 1 =====
-        Texture2D cactus1Texture = GetCactusTextureForType(cactusType, selectedEnvironment == 2);
-        if (glowAndStickPhase)
-        {
-            // Soft green glow (behind cactus)
-            DrawCircle(
-                cactusX + cactusWidth / 2,
-                cactusY + cactusHeight / 2,
-                cactusWidth + 6,
-                Fade(GREEN, 0.05f));
-
-            DrawCircle(
-                cactusX + cactusWidth / 2,
-                cactusY + cactusHeight / 2,
-                cactusWidth + 2,
-                Fade(LIME, 0.08f));
-        }
-
-        DrawTexturePro(
-            cactus1Texture,
-            (Rectangle){0, 0, (float)cactus1Texture.width, (float)cactus1Texture.height},
-            (Rectangle){(float)cactusX, (float)cactusY, (float)cactusWidth, (float)cactusHeight},
-            (Vector2){0, 0},
-            0,
-            glowAndStickPhase ? (Color){180, 255, 180, 255} : WHITE);
-
-        if (secondCactusActive)
-        {
-            Texture2D cactus2TextureToDraw = GetCactusTextureForType(cactus2Type, selectedEnvironment == 2);
             if (glowAndStickPhase)
             {
                 DrawCircle(
-                    cactus2X + cactus2Width / 2,
-                    cactus2Y + cactus2Height / 2,
-                    cactus2Width + 6,
+                    torchX + 1,
+                    torchY + torchOffsetY - 2,
+                    100,
+                    Fade(YELLOW, 0.01f));
+
+                DrawCircle(
+                    torchX + 1,
+                    torchY + torchOffsetY - 2,
+                    70,
+                    Fade(ORANGE, 0.02f));
+
+                DrawCircle(
+                    torchX + 1,
+                    torchY + torchOffsetY - 2,
+                    40,
+                    Fade(YELLOW, 0.03f));
+            }
+            // ===== DRAW CACTUS 1 =====
+            Texture2D cactus1Texture = GetCactusTextureForType(cactusType, selectedEnvironment == 2);
+            if (glowAndStickPhase)
+            {
+                // Soft green glow (behind cactus)
+                DrawCircle(
+                    cactusX + cactusWidth / 2,
+                    cactusY + cactusHeight / 2,
+                    cactusWidth + 6,
                     Fade(GREEN, 0.05f));
 
                 DrawCircle(
-                    cactus2X + cactus2Width / 2,
-                    cactus2Y + cactus2Height / 2,
-                    cactus2Width + 2,
+                    cactusX + cactusWidth / 2,
+                    cactusY + cactusHeight / 2,
+                    cactusWidth + 2,
                     Fade(LIME, 0.08f));
             }
+
             DrawTexturePro(
-                cactus2TextureToDraw,
-                (Rectangle){0, 0, (float)cactus2TextureToDraw.width, (float)cactus2TextureToDraw.height},
-                (Rectangle){(float)cactus2X, (float)cactus2Y, (float)cactus2Width, (float)cactus2Height},
+                cactus1Texture,
+                (Rectangle){0, 0, (float)cactus1Texture.width, (float)cactus1Texture.height},
+                (Rectangle){(float)cactusX, (float)cactusY, (float)cactusWidth, (float)cactusHeight},
                 (Vector2){0, 0},
-                0.0f,
+                0,
                 glowAndStickPhase ? (Color){180, 255, 180, 255} : WHITE);
-        }
 
-        // ===== DRAW BIRD (Using textures with scaling) =====
-        if (birdActive && glowAndStickPhase)
-        {
-            DrawCircle(
-                birdX + 20,
-                birdY + 10,
-                18,
-                Fade(WHITE, 0.12f));
-        }
-        if (birdActive)
-        {
-            if (birdAnimationType == 0)
+            if (secondCactusActive)
             {
+                Texture2D cactus2TextureToDraw = GetCactusTextureForType(cactus2Type, selectedEnvironment == 2);
+                if (glowAndStickPhase)
+                {
+                    DrawCircle(
+                        cactus2X + cactus2Width / 2,
+                        cactus2Y + cactus2Height / 2,
+                        cactus2Width + 6,
+                        Fade(GREEN, 0.05f));
+
+                    DrawCircle(
+                        cactus2X + cactus2Width / 2,
+                        cactus2Y + cactus2Height / 2,
+                        cactus2Width + 2,
+                        Fade(LIME, 0.08f));
+                }
                 DrawTexturePro(
-                    birdUpTexture,
-                    (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
-                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                    cactus2TextureToDraw,
+                    (Rectangle){0, 0, (float)cactus2TextureToDraw.width, (float)cactus2TextureToDraw.height},
+                    (Rectangle){(float)cactus2X, (float)cactus2Y, (float)cactus2Width, (float)cactus2Height},
                     (Vector2){0, 0},
                     0.0f,
-                    glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                    glowAndStickPhase ? (Color){180, 255, 180, 255} : WHITE);
             }
-            else if (birdAnimationType == 1)
+
+            // ===== DRAW BIRD (Using textures with scaling) =====
+            if (birdActive && glowAndStickPhase)
             {
-                DrawTexturePro(
-                    birdLevel2Texture,
-                    (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
-                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                    (Vector2){0, 0},
-                    0.0f,
-                    glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                DrawCircle(
+                    birdX + 20,
+                    birdY + 10,
+                    18,
+                    Fade(WHITE, 0.12f));
             }
-            else
+            if (birdActive)
             {
-                DrawTexturePro(
-                    birdDown2Texture,
-                    (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
-                    (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                    (Vector2){0, 0},
-                    0.0f,
-                    glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                if (birdAnimationType == 0)
+                {
+                    DrawTexturePro(
+                        birdUpTexture,
+                        (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
+                        (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                        (Vector2){0, 0},
+                        0.0f,
+                        glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                }
+                else if (birdAnimationType == 1)
+                {
+                    DrawTexturePro(
+                        birdLevel2Texture,
+                        (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
+                        (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                        (Vector2){0, 0},
+                        0.0f,
+                        glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                }
+                else
+                {
+                    DrawTexturePro(
+                        birdDown2Texture,
+                        (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
+                        (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
+                        (Vector2){0, 0},
+                        0.0f,
+                        glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                }
             }
-        }
 
-        // Draw UI
-        Color textColor = DARKGRAY;
+            // Draw UI
+            Color textColor = DARKGRAY;
 
-        if (selectedEnvironment == 1)
-        {
-            if (summerPhase == 1)
-                textColor = WHITE;
-        }
-        DrawText("Press SPACE to JUMP", 10, 10, 20, textColor);
-        DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, textColor);
-        DrawText(TextFormat("Score: %d", score), 650, 20, 20, textColor);
-        DrawText(TextFormat("High Score: %d", highscore), 600, 50, 20, textColor);
+            if (selectedEnvironment == 1)
+            {
+                if (summerPhase == 1)
+                    textColor = WHITE;
+            }
+            DrawText("Press SPACE to JUMP", 10, 10, 20, textColor);
+            DrawText("Use LEFT RIGHT arrows to MOVE", 10, 40, 20, textColor);
+            DrawText(TextFormat("Score: %d", score), 650, 20, 20, textColor);
+            DrawText(TextFormat("High Score: %d", highscore), 600, 50, 20, textColor);
 
-        // Game over screen
-        if (gameOver)
-        {
-            DrawText("GAME OVER", 280, 150, 40, RED);
-            DrawText("Press R to restart", 285, 195, 25, DARKGRAY);
-            DrawText(TextFormat("High Score: %d", highscore), 320, 240, 25, BLUE);
-        }
+            // Game over screen
+            if (gameOver)
+            {
+                DrawText("GAME OVER", 280, 150, 40, RED);
+                DrawText("Press R to restart", 285, 195, 25, DARKGRAY);
+                DrawText(TextFormat("High Score: %d", highscore), 320, 240, 25, BLUE);
+            }
         } // Close gameStarted else block
 
         EndDrawing();
@@ -1406,9 +1418,8 @@ int main()
     UnloadTexture(cactusFrostedTexture);
     UnloadTexture(dinoJump);
     UnloadTexture(dinoCrouchTexture);
-     UnloadTexture(menu);
+    UnloadTexture(menu);
 
     CloseWindow();
     return 0;
 }
-
