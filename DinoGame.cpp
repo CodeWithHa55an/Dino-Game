@@ -28,11 +28,11 @@ int main()
     Texture2D cactusTallTexture = LoadTexture("Assets/Cactus_Tall.png");
     Texture2D cactusVeryTallTexture = LoadTexture("Assets/Cactus_VeryTall.png");
     //dino
-    Texture2D dinoIdleTexture = LoadTexture("Assets/DinoIdle.png");
-    Texture2D dinoRun1Texture = LoadTexture("Assets/DinoFrontleg.png");
-    Texture2D dinoRun2Texture = LoadTexture("Assets/DinoBackleg.png");
-    Texture2D dinoJump = LoadTexture("Assets/Dinojump.png");
-    Texture2D dinoCrouchTexture = LoadTexture("Assets/DinoCrouch.png");
+    Texture2D dinoIdleTexture = LoadTexture("Assets/Dino1.png");
+    Texture2D dinoRun1Texture = LoadTexture("Assets/DinoFrontleg1.png");
+    Texture2D dinoRun2Texture = LoadTexture("Assets/DinoBackleg1.png");
+    Texture2D dinoJump = LoadTexture("Assets/Dinojump1.png");
+    Texture2D dinoCrouchTexture = LoadTexture("Assets/DinoCrouch1.png");
     // Summer
     Texture2D desertBG = LoadTexture("Assets/Summer/DesertBG1 copy.png");
     Texture2D bigCloud = LoadTexture("Assets/Summer/BigCloud.png");
@@ -60,14 +60,14 @@ int main()
      Texture2D menu = LoadTexture("Assets/Menu.png");
     // ==================== DINO VARIABLES ====================
     int dinoX = 100;
-    int dinoY = 260;
+    int dinoY = 230;
     int dinoWidth = 62;
     int dinoHeight = 80;
 
     int dinoSpeed = 0;
     int gravity = 1;
     int jumpPower = 18;
-    int ground = 260;
+    int ground = 280;
     bool isJumping = false;
     bool isMoving = false;
     int dinoRunCounter = 0;
@@ -1411,3 +1411,4 @@ int main()
     CloseWindow();
     return 0;
 }
+
