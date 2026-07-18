@@ -568,11 +568,11 @@ int main()
             else if (selectedEnvironment == 2)
             {
                 // Winter: gentle constant cloud drift
-                cloud1X -= 1;
-                cloud2X -= 1;
-                cloud3X -= 1;
+                cloud1X -= 1.0f;
+                cloud2X -= 1.0f;
+                cloud3X -= 1.0f;
 
-                if (!(cycleScore >= 61 && cycleScore <= 80)) // Respawn clouds except during score 61-80
+                if (cycleScore <= 50) // Respawn clouds only during 0-54
                 {
                     float maxCloudX = std::fmax((float)cloud1X, std::fmax((float)cloud2X, (float)cloud3X));
                     float spawnBaseX = std::fmax(850.0f, maxCloudX + 150.0f);
@@ -593,17 +593,21 @@ int main()
                     }
                 }
 
-                // Snowfall update (score 61-100)
-                if (cycleScore >= 61 && cycleScore <= 100)
+                // Snowfall always updates so remaining snow falls off screen naturally
+                for (int i = 0; i < snowCount; i++)
                 {
-                    for (int i = 0; i < snowCount; i++)
-                    {
-                        snow[i].y += snow[i].speed;
-                        snow[i].x -= 0.5f + sinf(snow[i].driftPhase + snow[i].y * 0.02f) * 0.5f; // Realistic wind
+                    if (cycleScore < 61) {
+                        snow[i].y = screenHeight + 100; // Force them completely off-screen
+                    }
 
-                        if (snow[i].y > screenHeight || snow[i].x < -10)
+                    snow[i].y += snow[i].speed;
+                    snow[i].x -= 0.5f + sinf(snow[i].driftPhase + snow[i].y * 0.02f) * 0.5f; // Realistic wind
+
+                    if (snow[i].y > screenHeight || snow[i].x < -10)
+                    {
+                        if (cycleScore >= 61 && cycleScore <= 90)
                         {
-                            snow[i].y = GetRandomValue(-50, -10);
+                            snow[i].y = GetRandomValue(-screenHeight, -10);
                             snow[i].x = GetRandomValue(0, screenWidth + 50);
                         }
                     }
@@ -762,7 +766,7 @@ int main()
                 else if (cycleScore <= 80)
                     weatherPhase = 1; // Night
                 else
-                    weatherPhase = 0; // Day
+                    weatherPhase = 2; // Cloudy Day
 
                 // Used by drawing code
                 summerPhase = weatherPhase;
@@ -1106,31 +1110,25 @@ int main()
                 else if (selectedEnvironment == 2)
                 {
                     Color daySkyTint = WHITE;
-                    if (cycleScore >= 81 && cycleScore <= 100)
-                    {
-                        daySkyTint = (Color){200, 210, 220, 255}; // Cloudy dark themed daylight
-                    }
+                    Color cloudySkyTint = (Color){200, 210, 220, 255}; // Cloudy dark themed daylight
                     Color nightSkyTint = (Color){90, 100, 150, 255};
 
                     Color skyTint = daySkyTint;
 
                     if (weatherTransitionActive)
                     {
-                        Color fromSky = (weatherTransitionFromPhase == 1)
-                                            ? nightSkyTint
-                                            : daySkyTint;
+                        Color fromSky = (weatherTransitionFromPhase == 1) ? nightSkyTint :
+                                        (weatherTransitionFromPhase == 2) ? cloudySkyTint : daySkyTint;
 
-                        Color toSky = (weatherTransitionToPhase == 1)
-                                          ? nightSkyTint
-                                          : daySkyTint;
+                        Color toSky = (weatherTransitionToPhase == 1) ? nightSkyTint :
+                                      (weatherTransitionToPhase == 2) ? cloudySkyTint : daySkyTint;
 
                         skyTint = LerpColor(fromSky, toSky, weatherTransitionProgress);
                     }
                     else
                     {
-                        skyTint = (summerPhase == 1)
-                                      ? nightSkyTint
-                                      : daySkyTint;
+                        skyTint = (summerPhase == 1) ? nightSkyTint :
+                                  (summerPhase == 2) ? cloudySkyTint : daySkyTint;
                     }
 
                     DrawTexturePro(
@@ -1190,25 +1188,25 @@ int main()
                 {
                     // ===== Winter ground: smooth Day/Night tint =====
                     Color dayGroundTint  = WHITE;
-                    if (cycleScore >= 81 && cycleScore <= 100)
-                    {
-                        dayGroundTint = (Color){200, 210, 220, 255}; // Cloudy dark themed daylight
-                    }
+                    Color cloudyGroundTint = (Color){200, 210, 220, 255}; // Cloudy dark themed daylight
                     Color nightGroundTint = (Color){140, 150, 185, 255};
 
                     Color groundTint = dayGroundTint;
 
                     if (weatherTransitionActive)
                     {
-                        Color fromGround = (weatherTransitionFromPhase == 1)
-                                               ? nightGroundTint : dayGroundTint;
-                        Color toGround   = (weatherTransitionToPhase == 1)
-                                               ? nightGroundTint : dayGroundTint;
+                        Color fromGround = (weatherTransitionFromPhase == 1) ? nightGroundTint :
+                                           (weatherTransitionFromPhase == 2) ? cloudyGroundTint : dayGroundTint;
+
+                        Color toGround = (weatherTransitionToPhase == 1) ? nightGroundTint :
+                                         (weatherTransitionToPhase == 2) ? cloudyGroundTint : dayGroundTint;
+
                         groundTint = LerpColor(fromGround, toGround, weatherTransitionProgress);
                     }
                     else
                     {
-                        groundTint = (summerPhase == 1) ? nightGroundTint : dayGroundTint;
+                        groundTint = (summerPhase == 1) ? nightGroundTint :
+                                     (summerPhase == 2) ? cloudyGroundTint : dayGroundTint;
                     }
 
                     DrawTexturePro(
@@ -1239,31 +1237,19 @@ int main()
                     DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
 
                     // ================= SNOWFALL =================
-                    static float snowAlpha = 0.0f;
-                    if (cycleScore >= 61 && cycleScore <= 100) {
-                        snowAlpha += GetFrameTime() * 0.5f;
-                        if (snowAlpha > 1.0f) snowAlpha = 1.0f;
-                    } else {
-                        snowAlpha -= GetFrameTime() * 0.5f;
-                        if (snowAlpha < 0.0f) snowAlpha = 0.0f;
+                    Color snowColor = WHITE;
+                    if (summerPhase == 1) // Night (61-80)
+                    {
+                        snowColor = (Color){200, 220, 255, 200}; // Slightly blue, transparent at night
+                    }
+                    else // Day (81-100)
+                    {
+                        snowColor = (Color){255, 255, 255, 255}; // Bright white in day
                     }
 
-                    if (snowAlpha > 0.0f)
+                    for (int i = 0; i < snowCount; i++)
                     {
-                        Color snowColor = WHITE;
-                        if (summerPhase == 1) // Night (61-80)
-                        {
-                            snowColor = (Color){200, 220, 255, 200}; // Slightly blue, transparent at night
-                        }
-                        else // Day (81-100)
-                        {
-                            snowColor = (Color){255, 255, 255, 255}; // Bright white in day
-                        }
-                        
-                        snowColor = Fade(snowColor, snowAlpha);
-
-                        for (int i = 0; i < snowCount; i++)
-                        {
+                        if (snow[i].y > -20 && snow[i].y < screenHeight) {
                             DrawCircle(snow[i].x, snow[i].y, snow[i].size, snowColor);
                         }
                     }
