@@ -9,6 +9,15 @@ struct RainDrop
     float y;
     float speed;
 };
+
+struct SnowFlake
+{
+    float x;
+    float y;
+    float speed;
+    float size;
+    float driftPhase;
+};
 int main()
 {
     const int screenWidth = 800;
@@ -149,6 +158,10 @@ int main()
     const int rainCount = 80;
     RainDrop rain[rainCount];
 
+    // Snow
+    const int snowCount = 100;
+    SnowFlake snow[snowCount];
+
     // ==================== DAY / NIGHT ====================
     bool isNight = false;
     int nextDayNightScore = 5; // Change every 20 points
@@ -227,6 +240,15 @@ int main()
 
         // All drops have similar speed (more realistic)
         rain[i].speed = GetRandomValue(12, 18);
+    }
+    
+    for (int i = 0; i < snowCount; i++)
+    {
+        snow[i].x = GetRandomValue(0, screenWidth);
+        snow[i].y = GetRandomValue(0, screenHeight);
+        snow[i].speed = GetRandomValue(2, 5) * 0.5f;
+        snow[i].size = GetRandomValue(1, 3);
+        snow[i].driftPhase = GetRandomValue(0, 100) / 10.0f;
     }
     float sunX = 750;
     float moonX = 850;
@@ -525,6 +547,14 @@ int main()
                 dinoSpeed = 0;
             }
 
+            // ===== WEATHER & CELESTIAL PHASE LOGIC =====
+            float dt = GetFrameTime();
+            int cycleScore = score % 100;
+            if (score == 0)
+                cycleScore = 0;
+            else if (cycleScore == 0)
+                cycleScore = 100;
+
             // ===== CLOUD MOVEMENT =====
             if (selectedEnvironment == 1)
             {
@@ -537,24 +567,48 @@ int main()
             }
             else if (selectedEnvironment == 2)
             {
-                // Winter: gentle constant cloud drift (Day only)
-                if (summerPhase == 0)
+                // Winter: gentle constant cloud drift
+                cloud1X -= 1;
+                cloud2X -= 1;
+                cloud3X -= 1;
+
+                if (!(cycleScore >= 61 && cycleScore <= 80)) // Respawn clouds except during score 61-80
                 {
-                    cloud1X -= 1;
-                    if (cloud1X < -50) { cloud1X = 850; cloud1Y = GetRandomValue(40, 150); }
-                    cloud2X -= 1;
-                    if (cloud2X < -50) { cloud2X = 850; cloud2Y = GetRandomValue(40, 150); }
-                    cloud3X -= 1;
-                    if (cloud3X < -50) { cloud3X = 850; cloud3Y = GetRandomValue(40, 150); }
+                    float maxCloudX = std::fmax((float)cloud1X, std::fmax((float)cloud2X, (float)cloud3X));
+                    float spawnBaseX = std::fmax(850.0f, maxCloudX + 150.0f);
+                    
+                    if (cloud1X < -50) { 
+                        cloud1X = spawnBaseX + GetRandomValue(0, 100); 
+                        cloud1Y = GetRandomValue(40, 150); 
+                        spawnBaseX = cloud1X + 150.0f;
+                    }
+                    if (cloud2X < -50) { 
+                        cloud2X = spawnBaseX + GetRandomValue(0, 100); 
+                        cloud2Y = GetRandomValue(40, 150); 
+                        spawnBaseX = cloud2X + 150.0f;
+                    }
+                    if (cloud3X < -50) { 
+                        cloud3X = spawnBaseX + GetRandomValue(0, 100); 
+                        cloud3Y = GetRandomValue(40, 150); 
+                    }
+                }
+
+                // Snowfall update (score 61-100)
+                if (cycleScore >= 61 && cycleScore <= 100)
+                {
+                    for (int i = 0; i < snowCount; i++)
+                    {
+                        snow[i].y += snow[i].speed;
+                        snow[i].x -= 0.5f + sinf(snow[i].driftPhase + snow[i].y * 0.02f) * 0.5f; // Realistic wind
+
+                        if (snow[i].y > screenHeight || snow[i].x < -10)
+                        {
+                            snow[i].y = GetRandomValue(-50, -10);
+                            snow[i].x = GetRandomValue(0, screenWidth + 50);
+                        }
+                    }
                 }
             }
-            // ===== WEATHER & CELESTIAL PHASE LOGIC =====
-            float dt = GetFrameTime();
-            int cycleScore = score % 100;
-            if (score == 0)
-                cycleScore = 0;
-            else if (cycleScore == 0)
-                cycleScore = 100;
 
             // Determine weather phase based on user schedule:
             // 0-20: Day, 21-40: Night, 41-60: Day, 61-80: Day Rain, 81-90: Rain Night, 91-100: Night
@@ -1052,6 +1106,10 @@ int main()
                 else if (selectedEnvironment == 2)
                 {
                     Color daySkyTint = WHITE;
+                    if (cycleScore >= 81 && cycleScore <= 100)
+                    {
+                        daySkyTint = (Color){200, 210, 220, 255}; // Cloudy dark themed daylight
+                    }
                     Color nightSkyTint = (Color){90, 100, 150, 255};
 
                     Color skyTint = daySkyTint;
@@ -1132,6 +1190,10 @@ int main()
                 {
                     // ===== Winter ground: smooth Day/Night tint =====
                     Color dayGroundTint  = WHITE;
+                    if (cycleScore >= 81 && cycleScore <= 100)
+                    {
+                        dayGroundTint = (Color){200, 210, 220, 255}; // Cloudy dark themed daylight
+                    }
                     Color nightGroundTint = (Color){140, 150, 185, 255};
 
                     Color groundTint = dayGroundTint;
@@ -1162,7 +1224,7 @@ int main()
                 Color groundColor = isNight ? WHITE : BLACK;
 
                 // Draw clouds
-                if (selectedEnvironment == 2 && summerPhase == 0)
+                if (selectedEnvironment == 2)
                 {
                     DrawCircle(cloud1X, cloud1Y, 20, LIGHTGRAY);
                     DrawCircle(cloud1X + 20, cloud1Y, 20, LIGHTGRAY);
@@ -1175,6 +1237,36 @@ int main()
                     DrawCircle(cloud3X, cloud3Y, 20, LIGHTGRAY);
                     DrawCircle(cloud3X + 20, cloud3Y, 20, LIGHTGRAY);
                     DrawCircle(cloud3X + 40, cloud3Y, 20, LIGHTGRAY);
+
+                    // ================= SNOWFALL =================
+                    static float snowAlpha = 0.0f;
+                    if (cycleScore >= 61 && cycleScore <= 100) {
+                        snowAlpha += GetFrameTime() * 0.5f;
+                        if (snowAlpha > 1.0f) snowAlpha = 1.0f;
+                    } else {
+                        snowAlpha -= GetFrameTime() * 0.5f;
+                        if (snowAlpha < 0.0f) snowAlpha = 0.0f;
+                    }
+
+                    if (snowAlpha > 0.0f)
+                    {
+                        Color snowColor = WHITE;
+                        if (summerPhase == 1) // Night (61-80)
+                        {
+                            snowColor = (Color){200, 220, 255, 200}; // Slightly blue, transparent at night
+                        }
+                        else // Day (81-100)
+                        {
+                            snowColor = (Color){255, 255, 255, 255}; // Bright white in day
+                        }
+                        
+                        snowColor = Fade(snowColor, snowAlpha);
+
+                        for (int i = 0; i < snowCount; i++)
+                        {
+                            DrawCircle(snow[i].x, snow[i].y, snow[i].size, snowColor);
+                        }
+                    }
                 }
                 // ================= RAIN CLOUDS (Summer only) =================
                 if (selectedEnvironment == 1 &&
