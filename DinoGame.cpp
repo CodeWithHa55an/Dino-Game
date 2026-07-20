@@ -543,7 +543,7 @@ int main()
                     birdX = 800;
                     isDoubleBird = IsDoubleBirdScore(score);
                     // Single bird forces jump, double bird (stacked) forces crouch
-                    birdY = isDoubleBird ? 220 : 300; 
+                    birdY = isDoubleBird ? 180 : 300; 
                     birdAnimationType = 0;
                     birdAnimationCounter = 0;
 
@@ -1685,7 +1685,7 @@ int main()
                 if (isDoubleBird)
                 {
                     // Draw second bird underneath the first
-                    DrawBirdSprite((float)birdX, (float)birdY + birdHeight + 5.0f);
+                    DrawBirdSprite((float)birdX, (float)birdY + birdHeight + 90.0f);
                 }
             }
 
