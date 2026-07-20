@@ -67,8 +67,7 @@ int main()
     // Menu
     Texture2D menu = LoadTexture("Assets/Menu.png");
     // Tutorial
-    Texture2D summerTutorial = LoadTexture("Assets/SummerTutorial1.png");
-    Texture2D winterTutorial = LoadTexture("Assets/WinterTutorial1.png");
+    Texture2D tutorial = LoadTexture("Assets/Tutorial.png");
 
     // ==================== DINO VARIABLES ====================
     int dinoX = 100;
@@ -287,44 +286,24 @@ int main()
         // Start screen
         if (!gameStarted)
         {
-             if (!showTutorial){
-            if (IsKeyPressed(KEY_ONE))
+            if (!showTutorial)
             {
-                selectedEnvironment = 1;
+                if (IsKeyPressed(KEY_ONE))
+                {
+                    selectedEnvironment = 1;
+                }
+
+                if (IsKeyPressed(KEY_TWO))
+                {
+                    selectedEnvironment = 2;
+                }
+                if (IsKeyPressed(KEY_ENTER) && selectedEnvironment != 0)
+                {
+                    showTutorial = true;
+                }
             }
-
-            if (IsKeyPressed(KEY_TWO))
+            else // showTutorial == true
             {
-                selectedEnvironment = 2;
-            }
-            if (IsKeyPressed(KEY_ENTER) && selectedEnvironment != 0)
-            {
-
-                showTutorial = true;
-            }
-        }
-            if (showTutorial)
-            {
-                BeginDrawing();
-                ClearBackground(BLACK);
-
-                if (selectedEnvironment == 1)
-                    DrawTexturePro(summerTutorial,
-                                   (Rectangle){0, 0, (float)summerTutorial.width, (float)summerTutorial.height},
-                                   (Rectangle){0, 0, 800, 420},
-                                   (Vector2){0, 0},
-                                   0,
-                                   WHITE);
-                else
-                    DrawTexturePro(winterTutorial,
-                                   (Rectangle){0, 0, (float)winterTutorial.width, (float)winterTutorial.height},
-                                   (Rectangle){0, 0, 800, 420},
-                                   (Vector2){0, 0},
-                                   0,
-                                   WHITE);
-
-                EndDrawing();
-
                 if (IsKeyPressed(KEY_ENTER))
                 {
                     showTutorial = false;
@@ -343,8 +322,6 @@ int main()
                     leftCloudOffset = -500.0f;
                     rightCloudOffset = 800.0f;
                 }
-
-                continue;
             }
         }
         if (gameStarted && IsKeyDown(KEY_DOWN) && !isJumping)
@@ -396,7 +373,7 @@ int main()
             dinoSpeed = dinoSpeed + gravity;
             dinoY = dinoY + dinoSpeed;
 
-            // ===== DINO COLLISION WITH GROUND =====
+            // =====  DINO COLLISION WITH GROUND =====
             if (dinoY >= ground)
             {
                 dinoY = ground;
@@ -895,7 +872,9 @@ int main()
             else if (cycleScore == 0)
                 cycleScore = 100;
         }
-        bool glowAndStickPhase = (cycleScore >= 21 && cycleScore <= 40) || (cycleScore >= 61 && cycleScore <= 80);
+        bool glowAndStickPhase = (selectedEnvironment == 1)
+            ? ((cycleScore >= 21 && cycleScore <= 40) || (cycleScore >= 81 && cycleScore <= 100))
+            : ((cycleScore >= 21 && cycleScore <= 40) || (cycleScore >= 61 && cycleScore <= 80));
 
         // ---------- Clouds Enter ----------
         if (gameStarted && cloudEntering)
@@ -932,7 +911,7 @@ int main()
             }
         }
 
-        if (!gameStarted)
+        if (!gameStarted && !showTutorial)
         {
             ClearBackground(BLACK);
 
@@ -1638,6 +1617,48 @@ int main()
             }
         } // Close gameStarted else block
 
+        if (showTutorial)
+        {
+            // Semi-transparent overlay to dim the game
+            DrawRectangle(0, 0, screenWidth, screenHeight, Fade(BLACK, 0.4f));
+
+            // ===== Draw tutorial image centered =====
+            float tutScale = fminf((float)screenWidth / tutorial.width, (float)screenHeight / tutorial.height);
+            float tutW = tutorial.width * tutScale;
+            float tutH = tutorial.height * tutScale;
+            float tutX = (screenWidth - tutW) / 2.0f;
+            float tutY = (screenHeight - tutH) / 2.0f;
+
+            DrawTexturePro(
+                tutorial,
+                (Rectangle){0, 0, (float)tutorial.width, (float)tutorial.height},
+                (Rectangle){tutX, tutY, tutW, tutH},
+                (Vector2){0, 0},
+                0,
+                WHITE
+            );
+
+            // ===== "Press Enter to Start" text =====
+            static float tutPulseTimer = 0.0f;
+            tutPulseTimer += GetFrameTime() * 3.0f;
+            float tutPulse = (sinf(tutPulseTimer) + 1.0f) / 2.0f; // 0.0 to 1.0
+
+            Color themeColor = (selectedEnvironment == 1)
+                ? (Color){255, 160, 30, 255}   // warm orange for summer
+                : (Color){100, 180, 255, 255};  // icy blue for winter
+
+            const char* enterText = "Press ENTER to Start";
+            int fontSize = 20;
+            int textW = MeasureText(enterText, fontSize);
+            int textX = 400 - textW / 2;
+            int textY = 390;
+
+            // Shadow
+            DrawText(enterText, textX + 1, textY + 1, fontSize, (Color){0, 0, 0, 150});
+            // Pulsing glow
+            DrawText(enterText, textX, textY, fontSize, Fade(themeColor, 0.55f + 0.45f * tutPulse));
+        }
+
         EndDrawing();
     } // End while loop
 
@@ -1662,8 +1683,7 @@ int main()
     UnloadTexture(dinoJump);
     UnloadTexture(dinoCrouchTexture);
     UnloadTexture(menu);
-    UnloadTexture(summerTutorial);
-    UnloadTexture(winterTutorial);
+    UnloadTexture(tutorial);
 
     CloseWindow();
     return 0;
