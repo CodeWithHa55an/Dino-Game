@@ -64,8 +64,24 @@ int main()
     const int screenWidth = 800;
     const int screenHeight = 420;
     // ==================== SETUP ====================
+    // ==================== SETUP ====================
     InitWindow(screenWidth, screenHeight, "Dino Game");
+    InitAudioDevice();
     SetTargetFPS(60);
+
+    // ==================== AUDIO LOADING ====================
+    Sound jumpSfx = LoadSound("Assets/JumpSfx.mp3");
+    Sound landingSfx = LoadSound("Assets/Landing.mp3");
+    Sound gameOverSfx = LoadSound("Assets/GameOver.mp3");
+    Sound thunderSfx = LoadSound("Assets/Thunder.mp3");
+
+    Music gameMenuMusic = LoadMusicStream("Assets/GameMenu.mp3");
+    Music gameBgMusic = LoadMusicStream("Assets/GameBgSfx.mpeg");
+    Music rainMusic = LoadMusicStream("Assets/Rain1.mp3");
+    Music snowMusic = LoadMusicStream("Assets/Snowfall.mp3");
+
+    // Start menu music
+    PlayMusicStream(gameMenuMusic);
 
     // Load textures from the correct Assets folder
     Texture2D birdUpTexture = LoadTexture("Assets/Bird.png");
@@ -333,6 +349,36 @@ int main()
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
     {
+        // Update audio streams
+        UpdateMusicStream(gameMenuMusic);
+        UpdateMusicStream(gameBgMusic);
+        UpdateMusicStream(rainMusic);
+        UpdateMusicStream(snowMusic);
+
+        if (!gameStarted) {
+            if (!IsMusicStreamPlaying(gameMenuMusic)) PlayMusicStream(gameMenuMusic);
+            if (IsMusicStreamPlaying(gameBgMusic)) StopMusicStream(gameBgMusic);
+            if (IsMusicStreamPlaying(rainMusic)) StopMusicStream(rainMusic);
+            if (IsMusicStreamPlaying(snowMusic)) StopMusicStream(snowMusic);
+        } else {
+            if (IsMusicStreamPlaying(gameMenuMusic)) StopMusicStream(gameMenuMusic);
+            if (!IsMusicStreamPlaying(gameBgMusic)) PlayMusicStream(gameBgMusic);
+
+            bool isRaining = (selectedEnvironment == 1 && (summerPhase == 3 || summerPhase == 4));
+            bool isSnowing = (selectedEnvironment == 2);
+
+            if (isRaining && !gameOver) {
+                if (!IsMusicStreamPlaying(rainMusic)) PlayMusicStream(rainMusic);
+            } else {
+                if (IsMusicStreamPlaying(rainMusic)) StopMusicStream(rainMusic);
+            }
+
+            if (isSnowing && !gameOver) {
+                if (!IsMusicStreamPlaying(snowMusic)) PlayMusicStream(snowMusic);
+            } else {
+                if (IsMusicStreamPlaying(snowMusic)) StopMusicStream(snowMusic);
+            }
+        }
         // Start screen
         if (!gameStarted)
         {
@@ -393,6 +439,7 @@ int main()
                 {
                     dinoSpeed = -jumpPower;
                     isJumping = true;
+                    PlaySound(jumpSfx);
                 }
             }
 
@@ -426,6 +473,7 @@ int main()
             // =====  DINO COLLISION WITH GROUND =====
             if (dinoY >= ground)
             {
+                if (isJumping) PlaySound(landingSfx);
                 dinoY = ground;
                 dinoSpeed = 0;
                 isJumping = false;
@@ -508,6 +556,7 @@ int main()
                 if (lightningFlashAlpha <= 0.0f && GetRandomValue(0, 1000) < 5)
                 {
                     lightningFlashAlpha = 1.0f;
+                    PlaySound(thunderSfx);
                     lightningPath.clear();
                     Vector2 current = { (float)GetRandomValue(100, 700), -10.0f };
                     while (current.y < 350)
@@ -547,9 +596,9 @@ int main()
                     birdAnimationType = 0;
                     birdAnimationCounter = 0;
 
-                    // Push cactus way back so it doesn't overlap with the bird.
-                    int distanceCactusTravels = 150 * cactusSpeed; // Giving more room since birdSpeed increases
-                    cactusX = 800 + distanceCactusTravels + GetRandomValue(200, 400);
+                    // Push cactus back just enough so it doesn't overlap with the bird.
+                    // Since bird is generally faster or equal to cactus, a fixed gap is enough.
+                    cactusX = 800 + GetRandomValue(450, 650);
                 }
                 else
                 {
@@ -645,6 +694,7 @@ int main()
                 (horizontalOverlap2 && verticalOverlap2) ||
                 (birdActive && birdHorizontal && birdVertical))
             {
+                if (!gameOver) PlaySound(gameOverSfx);
                 gameOver = true;
                 dinoSpeed = 0;
             }
@@ -1189,7 +1239,7 @@ int main()
                     skyTint);
 
                 // ===== LIGHTNING DRAW =====
-                if (lightningFlashAlpha > 0.0f)
+                if (lightningFlashAlpha > 0.0f && cycleScore <= 90 && cycleScore >= 61)
                 {
                     DrawRectangle(0, 0, 800, 420, Fade(WHITE, lightningFlashAlpha * 0.4f));
                     for (size_t i = 0; i < lightningPath.size(); i++)
@@ -1785,6 +1835,16 @@ int main()
     UnloadTexture(dinoCrouchTexture);
     UnloadTexture(menu);
     UnloadTexture(tutorial);
+
+    UnloadSound(jumpSfx);
+    UnloadSound(landingSfx);
+    UnloadSound(gameOverSfx);
+    UnloadSound(thunderSfx);
+    UnloadMusicStream(gameMenuMusic);
+    UnloadMusicStream(gameBgMusic);
+    UnloadMusicStream(rainMusic);
+    UnloadMusicStream(snowMusic);
+    CloseAudioDevice();
 
     CloseWindow();
     return 0;
