@@ -74,9 +74,10 @@ int main()
     Sound landingSfx = LoadSound("Assets/Landing.mp3");
     Sound gameOverSfx = LoadSound("Assets/GameOver.mp3");
     Sound thunderSfx = LoadSound("Assets/Thunder.mp3");
+    Sound buttonSfx = LoadSound("Assets/Button.mp3");
 
     Music gameMenuMusic = LoadMusicStream("Assets/GameMenu.mp3");
-    Music gameBgMusic = LoadMusicStream("Assets/GameBgSfx.mpeg");
+    Music gameBgMusic = LoadMusicStream("Assets/GameBgSfx.mp3");
     Music rainMusic = LoadMusicStream("Assets/Rain1.mp3");
     Music snowMusic = LoadMusicStream("Assets/Snowfall.mp3");
 
@@ -122,7 +123,7 @@ int main()
     Texture2D cactusVeryTallSnowTexture = LoadTexture("Assets/Winter/CactusVeryTallSnowy.png");
     Texture2D cactusFrostedTexture = LoadTexture("Assets/Winter/CactusFrosted.png");
     // Menu
-    Texture2D menu = LoadTexture("Assets/Menu.png");
+    Texture2D menu = LoadTexture("Assets/Menu2.png");
     // Tutorial
     Texture2D tutorial = LoadTexture("Assets/Tutorial.png");
 
@@ -345,6 +346,10 @@ int main()
     int weatherTransitionFromPhase = 0;
     int weatherTransitionToPhase = 0;
     float weatherTransitionDuration = 1.2f;
+    
+    float shakeDuration = 0.0f;
+    Camera2D camera = { 0 };
+    camera.zoom = 1.0f;
 
     // ==================== GAME LOOP ====================
     while (!WindowShouldClose())
@@ -387,11 +392,13 @@ int main()
                 if (IsKeyPressed(KEY_ONE))
                 {
                     selectedEnvironment = 1;
+                    PlaySound(buttonSfx);
                 }
 
                 if (IsKeyPressed(KEY_TWO))
                 {
                     selectedEnvironment = 2;
+                    PlaySound(buttonSfx);
                 }
                 if (IsKeyPressed(KEY_ENTER) && selectedEnvironment != 0)
                 {
@@ -551,7 +558,7 @@ int main()
             if (score == 0) updateCycleScore = 0;
             else if (updateCycleScore == 0) updateCycleScore = 100;
 
-            if (selectedEnvironment == 1 && updateCycleScore >= 61 && updateCycleScore <= 90)
+            if (selectedEnvironment == 1 && updateCycleScore >= 61 && updateCycleScore <= 85)
             {
                 if (lightningFlashAlpha <= 0.0f && GetRandomValue(0, 1000) < 5)
                 {
@@ -569,7 +576,7 @@ int main()
             }
             if (lightningFlashAlpha > 0.0f)
             {
-                if (updateCycleScore > 90 || selectedEnvironment != 1) {
+                if (updateCycleScore > 85 || selectedEnvironment != 1) {
                     lightningFlashAlpha = 0.0f;
                 } else {
                     lightningFlashAlpha -= GetFrameTime() * 2.5f;
@@ -694,7 +701,10 @@ int main()
                 (horizontalOverlap2 && verticalOverlap2) ||
                 (birdActive && birdHorizontal && birdVertical))
             {
-                if (!gameOver) PlaySound(gameOverSfx);
+                if (!gameOver) {
+                    PlaySound(gameOverSfx);
+                    shakeDuration = 0.3f;
+                }
                 gameOver = true;
                 dinoSpeed = 0;
             }
@@ -997,6 +1007,22 @@ int main()
 
         // ===== DRAWING (always runs) =====
         BeginDrawing();
+
+        if (shakeDuration > 0.0f)
+        {
+            shakeDuration -= GetFrameTime();
+            camera.target = (Vector2){ 400.0f, 210.0f };
+            camera.offset = (Vector2){ 400.0f + (float)GetRandomValue(-10, 10), 210.0f + (float)GetRandomValue(-10, 10) };
+            camera.zoom = 1.03f;
+        }
+        else
+        {
+            camera.target = (Vector2){ 0.0f, 0.0f };
+            camera.offset = (Vector2){ 0.0f, 0.0f };
+            camera.zoom = 1.0f;
+        }
+        BeginMode2D(camera);
+        
         // cycleScore for drawing (mirrors value from update, or 0 if not yet started)
         int cycleScore = 0;
         if (gameStarted)
@@ -1064,6 +1090,44 @@ int main()
                            (Vector2){0.0f, 0.0f},
                            0.0f,
                            WHITE);
+                           // ===== MENU TITLE =====
+const char *title = "SELECT ENVIRONMENT";
+int fontSize = 34;
+
+int textWidth = MeasureText(title, fontSize);
+DrawText(
+    title,
+    (screenWidth - textWidth) / 2 + 2,
+    220 + 2,
+    fontSize,
+    Fade(BLACK, 0.6f));
+
+DrawText(
+    title,
+    (screenWidth - textWidth) / 2, // Center horizontally
+    220,                            // Y position (adjust if needed)
+    fontSize,
+    WHITE);
+    // ===== Blinking "PRESS ENTER TO START" =====
+static float blinkTimer = 0.0f;
+blinkTimer += GetFrameTime();
+
+// Alpha oscillates between 60 and 255
+float alpha = (sinf(blinkTimer * 4.0f) + 1.0f) * 0.5f;
+Color blinkColor = Fade(BLACK, 0.25f + alpha * 0.75f);
+
+const char *startText = "PRESS ENTER TO START";
+int startFontSize = 24;
+
+int startTextWidth = MeasureText(startText, startFontSize);
+
+DrawText(
+    startText,
+    (screenWidth - startTextWidth) / 2,
+    screenHeight - 80,
+    startFontSize,
+    blinkColor
+);
 
             // Pulse animation timer
             static float pulseTimer = 0.0f;
@@ -1239,7 +1303,7 @@ int main()
                     skyTint);
 
                 // ===== LIGHTNING DRAW =====
-                if (lightningFlashAlpha > 0.0f && cycleScore <= 90 && cycleScore >= 61)
+                if (lightningFlashAlpha > 0.0f && cycleScore <= 85 && cycleScore >= 61)
                 {
                     DrawRectangle(0, 0, 800, 420, Fade(WHITE, lightningFlashAlpha * 0.4f));
                     for (size_t i = 0; i < lightningPath.size(); i++)
@@ -1810,6 +1874,7 @@ int main()
             DrawText(enterText, textX, textY, fontSize, Fade(themeColor, 0.55f + 0.45f * tutPulse));
         }
 
+        EndMode2D();
         EndDrawing();
     } // End while loop
 
@@ -1840,6 +1905,7 @@ int main()
     UnloadSound(landingSfx);
     UnloadSound(gameOverSfx);
     UnloadSound(thunderSfx);
+    UnloadSound(buttonSfx);
     UnloadMusicStream(gameMenuMusic);
     UnloadMusicStream(gameBgMusic);
     UnloadMusicStream(rainMusic);
