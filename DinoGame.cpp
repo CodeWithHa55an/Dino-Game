@@ -2,6 +2,7 @@
 
 #include "raylib.h"
 #include <cmath>
+#include <vector>
 
 struct RainDrop
 {
@@ -18,6 +19,46 @@ struct SnowFlake
     float size;
     float driftPhase;
 };
+
+int GetNextBirdScore(int score) {
+    int base = (score / 300) * 300;
+    int phase = score % 300;
+
+    // Single Targets (1-100)
+    if (phase < 15) return base + 15;
+    if (phase < 30) return base + 30;
+    if (phase < 45) return base + 45;
+    if (phase < 60) return base + 60;
+    if (phase < 75) return base + 75;
+    if (phase < 95) return base + 95;
+
+    // Double Targets (101-200)
+    if (phase < 110) return base + 110;
+    if (phase < 125) return base + 125;
+    if (phase < 140) return base + 140;
+    if (phase < 155) return base + 155;
+    if (phase < 170) return base + 170;
+    if (phase < 185) return base + 185;
+    if (phase < 200) return base + 200;
+
+    // Alternating Targets (201-300)
+    for (int i = 210; i <= 300; i += 10) {
+        if (phase < i) return base + i;
+    }
+
+    return base + 300 + 15;
+}
+
+bool IsDoubleBirdScore(int spawnScore) {
+    int phase = spawnScore % 300;
+    if (phase == 0) phase = 300;
+
+    if (phase <= 100) return false;
+    if (phase <= 200) return true;
+
+    // 201-300 alternating: 210 (single), 220 (double)
+    return (phase % 20 == 0);
+}
 int main()
 {
     const int screenWidth = 800;
@@ -149,14 +190,23 @@ int main()
     bool birdActive = false;
     int birdAnimationCounter = 0;
     int birdAnimationType = 0; // 0=up, 1=level, 2=down
+    bool isDoubleBird = false;
 
     // ==================== GAME VARIABLES ====================
     bool gameStarted = false;
     bool gameOver = false;
     int score = 0;
     int highscore = 0;
-    int nextBirdSpawnScore = 9999;
+    int nextBirdSpawnScore = 15;
     bool birdSpawnedAtThisScore = false;
+
+    // Lightning
+    float lightningFlashAlpha = 0.0f;
+    struct LightningSegment {
+        Vector2 start;
+        Vector2 end;
+    };
+    std::vector<LightningSegment> lightningPath;
     // Rain
     const int rainCount = 80;
     RainDrop rain[rainCount];
@@ -448,23 +498,75 @@ int main()
                     }
                 }
             }
-            // ===== CACTUS 1 RESET =====
+            // ===== LIGHTNING LOGIC =====
+            int updateCycleScore = score % 100;
+            if (score == 0) updateCycleScore = 0;
+            else if (updateCycleScore == 0) updateCycleScore = 100;
+
+            if (selectedEnvironment == 1 && updateCycleScore >= 61 && updateCycleScore <= 90)
+            {
+                if (lightningFlashAlpha <= 0.0f && GetRandomValue(0, 1000) < 5)
+                {
+                    lightningFlashAlpha = 1.0f;
+                    lightningPath.clear();
+                    Vector2 current = { (float)GetRandomValue(100, 700), -10.0f };
+                    while (current.y < 350)
+                    {
+                        Vector2 next = { current.x + GetRandomValue(-40, 40), current.y + GetRandomValue(20, 60) };
+                        lightningPath.push_back({current, next});
+                        current = next;
+                    }
+                }
+            }
+            if (lightningFlashAlpha > 0.0f)
+            {
+                if (updateCycleScore > 90 || selectedEnvironment != 1) {
+                    lightningFlashAlpha = 0.0f;
+                } else {
+                    lightningFlashAlpha -= GetFrameTime() * 2.5f;
+                    if (lightningFlashAlpha < 0.0f) lightningFlashAlpha = 0.0f;
+                }
+            }
+            // ===== CACTUS 1 AND BIRD SPAWN RESET =====
             if (cactusX < -cactusWidth)
             {
-                cactusX = 800 + GetRandomValue(0, 300);
-                cactusType = ChooseCactusType(score);
-                SetCactusSize(cactusType, cactusWidth, cactusHeight);
-                cactusY = 360 - cactusHeight;
                 score = score + 1;
-
                 if (score > highscore)
                 {
                     highscore = score;
                 }
 
+                if (score == nextBirdSpawnScore)
+                {
+                    // It's time for a bird!
+                    birdActive = true;
+                    birdX = 800;
+                    isDoubleBird = IsDoubleBirdScore(score);
+                    // Single bird forces jump, double bird (stacked) forces crouch
+                    birdY = isDoubleBird ? 220 : 300; 
+                    birdAnimationType = 0;
+                    birdAnimationCounter = 0;
+
+                    // Push cactus way back so it doesn't overlap with the bird.
+                    int distanceCactusTravels = 150 * cactusSpeed; // Giving more room since birdSpeed increases
+                    cactusX = 800 + distanceCactusTravels + GetRandomValue(200, 400);
+                }
+                else
+                {
+                    cactusX = 800 + GetRandomValue(0, 300);
+                }
+
+                cactusType = ChooseCactusType(score);
+                SetCactusSize(cactusType, cactusWidth, cactusHeight);
+                cactusY = 360 - cactusHeight;
+
                 if (score % 10 == 0 && score != 0 && cactusSpeed < 15)
                 {
                     cactusSpeed++;
+                    if (cactusSpeed % 2 == 0) // Increase bird speed every 2 cactus speed increases
+                    {
+                        birdSpeed++;
+                    }
                 }
 
                 int spawnChance = 0;
@@ -510,26 +612,8 @@ int main()
                 {
                     highscore = score;
                 }
-            }
-
-            // ===== SPAWN BIRD AT EXACT SCORES =====
-            if (score >= nextBirdSpawnScore && !birdSpawnedAtThisScore && !birdActive)
-            {
-                if (cactusX > 600)
-                {
-                    birdActive = false;
-                    birdX = 800;
-                    birdY = 220;
-                    birdAnimationType = 0;
-                    birdAnimationCounter = 0;
-                    birdSpawnedAtThisScore = true;
-                }
-            }
-
-            if (score > nextBirdSpawnScore && birdSpawnedAtThisScore && !birdActive)
-            {
-                nextBirdSpawnScore += 9999;
-                birdSpawnedAtThisScore = false;
+                
+                nextBirdSpawnScore = GetNextBirdScore(score); // Set next spawn using specific logic
             }
 
             // ===== COLLISION DETECTION - CACTUS 1 =====
@@ -550,10 +634,11 @@ int main()
             }
 
             // ===== COLLISION DETECTION - BIRD =====
+            int currentBirdTotalHeight = isDoubleBird ? (birdHeight * 2 + 5) : birdHeight;
             bool birdHorizontal = birdX + birdWidth > dinoX &&
                                   birdX < dinoX + dinoWidth;
             bool birdVertical = dinoY + dinoHeight > birdY &&
-                                dinoY < birdY + birdHeight;
+                                dinoY < birdY + currentBirdTotalHeight;
 
             // ===== GAME OVER =====
             if ((horizontalOverlap && verticalOverlap) ||
@@ -1103,6 +1188,17 @@ int main()
                     0,
                     skyTint);
 
+                // ===== LIGHTNING DRAW =====
+                if (lightningFlashAlpha > 0.0f)
+                {
+                    DrawRectangle(0, 0, 800, 420, Fade(WHITE, lightningFlashAlpha * 0.4f));
+                    for (size_t i = 0; i < lightningPath.size(); i++)
+                    {
+                        DrawLineEx(lightningPath[i].start, lightningPath[i].end, 3.0f, Fade(WHITE, lightningFlashAlpha));
+                        DrawLineEx(lightningPath[i].start, lightningPath[i].end, 8.0f, Fade(SKYBLUE, lightningFlashAlpha * 0.5f));
+                    }
+                }
+
                 // 🌞 SUN / 🌙 MOON SWITCH - draw celestial body based on phase
                 if (cycleScore <= 20 || (cycleScore > 40 && cycleScore <= 80))
                 {
@@ -1546,45 +1642,50 @@ int main()
             }
 
             // ===== DRAW BIRD (Using textures with scaling) =====
-            if (birdActive && glowAndStickPhase)
-            {
-                DrawCircle(
-                    birdX + 20,
-                    birdY + 10,
-                    18,
-                    Fade(WHITE, 0.12f));
-            }
             if (birdActive)
             {
-                if (birdAnimationType == 0)
+                auto DrawBirdSprite = [&](float bx, float by) {
+                    if (glowAndStickPhase)
+                    {
+                        DrawCircle(bx + 20, by + 10, 18, Fade(WHITE, 0.12f));
+                    }
+                    if (birdAnimationType == 0)
+                    {
+                        DrawTexturePro(
+                            birdUpTexture,
+                            (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
+                            (Rectangle){bx, by, 40.0f, 20.0f},
+                            (Vector2){0, 0},
+                            0.0f,
+                            glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                    }
+                    else if (birdAnimationType == 1)
+                    {
+                        DrawTexturePro(
+                            birdLevel2Texture,
+                            (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
+                            (Rectangle){bx, by, 40.0f, 20.0f},
+                            (Vector2){0, 0},
+                            0.0f,
+                            glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                    }
+                    else
+                    {
+                        DrawTexturePro(
+                            birdDown2Texture,
+                            (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
+                            (Rectangle){bx, by, 40.0f, 20.0f},
+                            (Vector2){0, 0},
+                            0.0f,
+                            glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                    }
+                };
+
+                DrawBirdSprite((float)birdX, (float)birdY);
+                if (isDoubleBird)
                 {
-                    DrawTexturePro(
-                        birdUpTexture,
-                        (Rectangle){0, 0, (float)birdUpTexture.width, (float)birdUpTexture.height},
-                        (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                        (Vector2){0, 0},
-                        0.0f,
-                        glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
-                }
-                else if (birdAnimationType == 1)
-                {
-                    DrawTexturePro(
-                        birdLevel2Texture,
-                        (Rectangle){0, 0, (float)birdLevel2Texture.width, (float)birdLevel2Texture.height},
-                        (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                        (Vector2){0, 0},
-                        0.0f,
-                        glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
-                }
-                else
-                {
-                    DrawTexturePro(
-                        birdDown2Texture,
-                        (Rectangle){0, 0, (float)birdDown2Texture.width, (float)birdDown2Texture.height},
-                        (Rectangle){(float)birdX, (float)birdY, 40.0f, 20.0f},
-                        (Vector2){0, 0},
-                        0.0f,
-                        glowAndStickPhase ? (Color){190, 210, 255, 255} : WHITE);
+                    // Draw second bird underneath the first
+                    DrawBirdSprite((float)birdX, (float)birdY + birdHeight + 5.0f);
                 }
             }
 
