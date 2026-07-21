@@ -1124,10 +1124,11 @@ int startTextWidth = MeasureText(startText, startFontSize);
 DrawText(
     startText,
     (screenWidth - startTextWidth) / 2,
-    screenHeight - 80,
+    screenHeight - 60,
     startFontSize,
     blinkColor
 );
+
 
             // Pulse animation timer
             static float pulseTimer = 0.0f;
@@ -1240,6 +1241,35 @@ DrawText(
             // Render custom button overlays on top of the menu image buttons
             DrawCustomButton(summerScreenRec, summerScale, selectedEnvironment == 1, ORANGE, "SUMMER", true);
             DrawCustomButton(winterScreenRec, winterScale, selectedEnvironment == 2, SKYBLUE, "WINTER", false);
+            // ===== Blinking "Press 1 / Press 2" =====
+static float pressBlinkTimer = 0.0f;
+pressBlinkTimer += GetFrameTime();
+
+float pressAlpha = (sinf(pressBlinkTimer * 4.0f) + 1.0f) * 0.5f;
+Color pressColor = Fade(BLACK, 0.30f + pressAlpha * 0.70f);
+
+const char *summerHint = "Press 1";
+const char *winterHint = "Press 2";
+
+int hintFontSize = 18;
+
+// Center below Summer button
+int summerHintWidth = MeasureText(summerHint, hintFontSize);
+DrawText(
+    summerHint,
+    summerScreenRec.x + (summerScreenRec.width - summerHintWidth) / 2,
+    summerScreenRec.y + summerScreenRec.height + 12,
+    hintFontSize,
+    pressColor);
+
+// Center below Winter button
+int winterHintWidth = MeasureText(winterHint, hintFontSize);
+DrawText(
+    winterHint,
+    winterScreenRec.x + (winterScreenRec.width - winterHintWidth) / 2,
+    winterScreenRec.y + winterScreenRec.height + 12,
+    hintFontSize,
+    pressColor);
 
             // Pulse line under "Press ENTER to Start" if environment is selected
             if (selectedEnvironment != 0)
